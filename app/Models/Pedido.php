@@ -6,5 +6,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pedido extends Model
 {
-    protected $fillable = ['tipo', 'lat', 'lng'];
+   protected $fillable = [
+    'mesa_id',
+    'nombre_cliente',
+    'telefono',
+    'tipo_pedido',
+    'estado',
+    'total',
+];
+
+
+//1n  Un pedido tiene muchos detalles de pedido y n detalles de pedido pertenecen a un pedido
+public function detalles(){
+    return $this->hasMany(DetallePedido::class);
 }
+
+
+public function mesa()
+{
+    return $this->belongsTo(Mesa::class);
+}
+}
+
+

@@ -1,34 +1,42 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-
-
-use App\Http\Controllers\PedidoController;
-
 use Inertia\Inertia;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\Admin\ProductoController;
+use App\Http\Controllers\Client\CatalogoController;
+use App\Http\Controllers\Client\PedidoController;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-})->name('welcome');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/login', [LoginController::class, 'create'])->name('login');
+Route::post('/login', [LoginController::class, 'store']);
+Route::post('/logout', [LoginController::class, 'destroy']);
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-Route::middleware('auth')->group(function () {
-    Route::post('/pedido', [PedidoController::class, 'store']);
+    Route::get('/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    })->name('dashboard');
+
+    Route::get('/dashboard/productos', [ProductoController::class, 'index'])
+        ->name('dashboard.productos.index');
+
+    Route::post('/dashboard/productos', [ProductoController::class, 'store'])
+        ->name('dashboard.productos.store');
+
+    Route::put('/dashboard/productos/{producto}', [ProductoController::class, 'update'])
+        ->name('dashboard.productos.update');
+
+    Route::delete('/dashboard/productos/{producto}', [ProductoController::class, 'destroy'])
+        ->name('dashboard.productos.destroy');
 });
 
-require __DIR__.'/auth.php';
+Route::get('/', [CatalogoController::class, 'index'])
+    ->name('inicio');
+
+Route::get('/mesa/{token}', [CatalogoController::class, 'mesa'])
+    ->name('catalogo.mesa');
+
+Route::post('/pedidos', [PedidoController::class, 'store'])
+    ->name('pedidos.store');
+    
+Route::get('/', [CatalogoController::class, 'index'])->name('inicio');
