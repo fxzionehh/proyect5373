@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Client;
 use App\Http\Controllers\Controller;
 use App\Models\Producto;
 use App\Models\Mesa;
+use App\Models\Pedido;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class CatalogoController extends Controller
+class MenuController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         return Inertia::render('Client/Index', [
             'productos' => Producto::where('stock', '>', 0)
@@ -18,19 +20,28 @@ class CatalogoController extends Controller
 
             'mesaActual' => null,
             'puedePedir' => false,
+            'pedidoActual' => null,
         ]);
     }
 
-    public function mesa($token)
+    public function mesa(Request $request, $mesa)
     {
-        $mesaActual = Mesa::where('qr_token', $token)
+        $mesaActual = Mesa::where('id', $mesa)
             ->where('activa', true)
             ->firstOrFail();
 
-        session([
-            'mesa_id' => $mesaActual->id,
-            'mesa_expira' => now()->addMinutes(45),
-        ]);
+        $pedidoActual = null;
+
+       $tokenCliente = session('token_cliente');
+
+        if ($tokenCliente) {
+            $pedidoActual = Pedido::with('detalles.producto')
+                ->where('mesa_id', $mesaActual->id)
+                ->where('token_cliente', $tokenCliente)
+                ->whereIn('estado', ['pendiente','en_preparacion', 'listo'])
+                ->latest()
+                ->first();
+        }
 
         return Inertia::render('Client/Index', [
             'productos' => Producto::where('stock', '>', 0)
@@ -43,6 +54,7 @@ class CatalogoController extends Controller
             ],
 
             'puedePedir' => true,
+            'pedidoActual' => $pedidoActual,
         ]);
     }
 }

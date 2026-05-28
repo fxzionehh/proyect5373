@@ -11,4 +11,23 @@ class Producto extends Model
         'precio',
         'stock'
     ];
+
+
+
+
+    public function preparaciones()
+{
+    return $this->hasMany(Preparacion::class);
 }
+
+   public function insumos()
+    {
+        return $this->belongsToMany(
+            Insumo::class,
+            'producto_insumo'
+        )
+        ->withPivot('cantidad', 'tamano')
+        ->withTimestamps();
+    }
+}
+

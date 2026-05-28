@@ -14,7 +14,7 @@ class LoginController extends Controller{
     }
 
 
-   public function store(Request $request)
+ public function store(Request $request)
 {
     $credentials = $request->validate([
         'email' => ['required', 'email'],
@@ -24,23 +24,35 @@ class LoginController extends Controller{
     if (Auth::attempt($credentials)) {
 
         $request->session()->regenerate();
+
         $user = Auth::user();
 
+     
         if ($user->role?->nombre === 'administrador') {
-            return redirect('/dashboard');
+            return redirect('/dashboard/productos');
         }
 
+       
+        if ($user->role?->nombre === 'barista') {
+            return redirect('/barista/pedidos');
+        }
+
+       
         Auth::logout();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
+        return redirect('/login')
+            ->withErrors([
+                'email' => 'no tienes permisos',
+            ]);
     }
 
-
+  
+    return back()->withErrors([
+        'email' => 'credenciales incorrectas',
+    ]);
 }
 
-    // 🔵 logout
+   
     public function destroy(Request $request)
     {
         Auth::logout();

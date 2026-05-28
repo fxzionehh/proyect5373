@@ -12,6 +12,7 @@ class Pedido extends Model
     'telefono',
     'tipo_pedido',
     'estado',
+    'token_cliente',
     'total',
 ];
 

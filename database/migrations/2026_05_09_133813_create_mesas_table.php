@@ -8,13 +8,14 @@ return new class extends Migration
 {
    public function up(): void
 {
-    Schema::create('mesas', function (Blueprint $table) {
-        $table->id();
-        $table->string('numero', 20)->unique();
-        $table->enum('estado', ['libre', 'ocupada', 'atendiendo'])->default('libre');
-        $table->boolean('activa')->default(true);
-        $table->timestamps();
-    });
+   Schema::create('mesas', function (Blueprint $table) {
+    $table->id();
+    $table->string('numero', 20)->unique();
+    $table->enum('estado', ['libre', 'ocupada', 'atendiendo'])->default('libre');
+    $table->boolean('activa')->default(true);
+    $table->string('qr_token')->unique()->nullable();
+    $table->timestamps();
+});
 }
 
     /**

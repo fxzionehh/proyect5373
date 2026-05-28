@@ -1,15 +1,17 @@
 import '../css/app.css';
 import './bootstrap';
 
+import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { createApp, h } from 'vue';
 
-import { ZiggyVue } from '../../vendor/tightenco/ziggy';
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+// --- PRIMEVUE 4 ---
+import PrimeVue from 'primevue/config';
+import ToastService from 'primevue/toastservice';
+import Aura from '@primevue/themes/aura'; // Ahora sí funcionará
+import 'primeicons/primeicons.css'; // Los iconos sí se importan aparte
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.vue`,
@@ -17,10 +19,19 @@ createInertiaApp({
         ),
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
-       .use(plugin)
-.mount(el);
-    },
-    progress: {
-        color: '#4B5563',
+            .use(plugin)
+            .use(PrimeVue, {
+                // Configuración de tema para v4
+                theme: {
+                    preset: Aura,
+                    options: {
+                        prefix: 'p',
+                        darkModeSelector: '.my-app-dark', // O 'system'
+                        cssLayer: false
+                    }
+                }
+            })
+            .use(ToastService)
+            .mount(el);
     },
 });
