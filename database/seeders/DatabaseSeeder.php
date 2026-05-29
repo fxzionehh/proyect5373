@@ -43,11 +43,10 @@ class DatabaseSeeder extends Seeder
             'role_id' => $baristaRole->id,
         ]);
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             Mesa::create([
                 'numero' => $i,
                 'estado' => 'libre',
-                'activa' => true,
                 'qr_token' => Str::random(32),
             ]);
         }
