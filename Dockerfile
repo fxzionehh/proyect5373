@@ -10,16 +10,18 @@ RUN npm run build
 FROM php:8.2-apache
 WORKDIR /var/www/html
 
-# Instalar extensiones necesarias de PHP (incluyendo PostgreSQL para Render)
+# Instalar extensiones necesarias de PHP y certificados CA indispensables para SSL
 RUN apt-get update && apt-get install -y \
     libpq-dev \
     libpng-dev \
     zip \
     unzip \
     git \
+    ca-certificates \
+    && update-ca-certificates \
     && docker-php-ext-install pdo pdo_pgsql pgsql gd
 
-# Habilitar el módulo rewrite de Apache (Crucial para las rutas de Laravel)
+# Habilitar el módulo rewrite de Apache
 RUN a2enmod rewrite
 
 # Cambiar la raíz de Apache a la carpeta /public de Laravel
@@ -40,7 +42,6 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 # Dar permisos correctos a las carpetas de Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Exponer el puerto por defecto de Render
 EXPOSE 80
 
 CMD ["apache2-foreground"]

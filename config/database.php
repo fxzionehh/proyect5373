@@ -96,7 +96,6 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'require'),
-            // 🔽 ESTO ES LO QUE SOLUCIONA EL CIERRE INESPERADO DE SSL 🔽
             'options' => [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_EMULATE_PREPARES => true,
