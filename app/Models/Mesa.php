@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Mesa extends Model
 {
-    protected $fillable = [
-        'numero',
-        'estado',
-        'activa',
-        'qr_token',
-    ];
+  use HasFactory;
 
-    // 🔽 AGREGA ESTE BLOQUE AQUÍ ABAJO 🔽
-    protected $casts = [
-        'activa' => 'boolean',
-    ];
+    protected $fillable = ['numero', 'estado', 'activa', 'qr_token'];
+
+    /**
+     * Forzar a Laravel a buscar por qr_token en las rutas de forma automática
+     */
+    public function getRouteKeyName()
+    {
+        return 'qr_token';
+    }
 
     public function pedidos()
     {
