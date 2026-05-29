@@ -44,4 +44,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+# 🔽 REEMPLAZAMOS LA ÚLTIMA LÍNEA POR ESTA 🔽
+CMD php artisan migrate:fresh --seed --force && apache2-foreground
