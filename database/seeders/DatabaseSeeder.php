@@ -47,7 +47,7 @@ class DatabaseSeeder extends Seeder
             Mesa::create([
                 'numero' => $i,
                 'estado' => 'libre',
-                'activa' => true,
+                'activa' => 1,
                 'qr_token' => Str::random(32),
             ]);
         }
