@@ -16,6 +16,7 @@ return new class extends Migration
         $table->string('nombre');
         $table->decimal('precio', 10, 2);
         $table->integer('stock');
+        $table->json('tamanos_permitidos')->nullable();
         $table->timestamps();
     });
 }

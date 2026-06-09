@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Pedido extends Model
 {
-   protected $fillable = [
+  protected $fillable = [
+    'user_id',
     'mesa_id',
     'nombre_cliente',
     'telefono',
@@ -16,6 +17,10 @@ class Pedido extends Model
     'total',
 ];
 
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
 
 //1n  Un pedido tiene muchos detalles de pedido y n detalles de pedido pertenecen a un pedido
 public function detalles(){

@@ -1,304 +1,140 @@
 <script setup>
-import { Link, router, usePage } from '@inertiajs/vue3'
-import navSito from '@/Components/Nav.vue'
 import { ref } from 'vue'
-
+import { Link, useForm, router, usePage } from '@inertiajs/vue3'
+import navSito from '@/Components/Nav.vue'
+import AppLayout from '@/Layouts/AppLayout.vue'
 const page = usePage()
 
+// Props recibidas del controlador
 defineProps({
-    pedidos: {
-        type: Array,
-        default: () => []
-    }
+    pedidos: Array,
+    productos: Array // Para el select del modal
 })
 
-
-const fecha = ref('')
+// Estados
 const inventarioAbierto = ref(false)
-const seccionActiva = ref('productos')
 const roleAbierto = ref(false)
-const openMenu = ref({
-    inventario: false,
-    pedidos: false,
-    roles: false,
-    usuarios: false,
+const modalAbierto = ref(false)
+
+// Formulario (Ajustado para productos)
+const form = useForm({
+    mesa_id: '',
+    nombre_cliente: '',
+    estado: 'pendiente',
+    tipo_pedido: 'presencial',
+    productos: [] 
 })
 
-const toggleMenu = (menu) => {
-    openMenu.value[menu] = !openMenu.value[menu]
+// Lógica de gestión de items en el pedido
+const prodSeleccionado = ref(null)
+
+const agregarProducto = () => {
+    if (!prodSeleccionado.value) return
+    form.productos.push({
+        id: prodSeleccionado.value.id,
+        nombre: prodSeleccionado.value.nombre,
+        precio: prodSeleccionado.value.precio,
+        cantidad: 1
+    })
+    prodSeleccionado.value = null
 }
 
+const abrirCrear = () => {
+    form.reset()
+    modalAbierto.value = true
+}
 
-
-const buscar = () => {
-    // Lógica para buscar pedidos por fecha
-    console.log('Buscando pedidos para la fecha:', fecha.value)
-    router.get('/dashboard/pedidos', { fecha: fecha.value }, {
-        preserveState: true,
-        preserveScroll: true,
+const guardar = () => {
+    form.post('/dashboard/pedidos', {
+        onSuccess: () => {
+            modalAbierto.value = false
+            form.reset()
+        }
     })
 }
 </script>
 
 <template>
-
     <navSito />
 
     <div class="flex min-h-screen bg-zinc-100/90">
+       <AppLayout />
 
-
-
-
-        <aside class="w-52 min-h-screen bg-zinc-950 flex flex-col shadow-xl">
-
-            <div class="px-6 py-7 border-zinc-900">
-                <p class="text-lg font-bold text-white">
-                    Panel Admin
-                </p>
+        <main class="flex-1 p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-black text-zinc-900">Pedidos</h1>
+                <button @click="abrirCrear"
+                    class="flex items-center gap-2 bg-amber-500 text-white px-4 py-1.5 rounded-lg font-semibold hover:bg-amber-600 transition shadow-sm text-sm">
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>Nuevo Pedido</span>
+                </button>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-3">
+            <section class="bg-white rounded-xl overflow-hidden border border-gray-200">
+                <table class="w-full">
+                   <thead class="bg-zinc-900 text-white text-sm uppercase tracking-wide">
+    <tr>
+        <th class="px-6 py-4 text-left">ID</th> <th class="px-6 py-4 text-left">Mesa</th>
+        <th class="px-6 py-4 text-left">Cliente</th>
+        <th class="px-6 py-4 text-left">Estado</th>
+        <th class="px-6 py-4 text-left">Total</th>
+      
+    </tr>
+</thead>
+               <tbody>
+    <tr v-for="p in pedidos" :key="p.id" class="border-t hover:bg-gray-50 transition">
+        <td class="px-6 py-4 font-bold text-zinc-500">#{{ p.id }}</td>
+        
+        <td class="px-6 py-4">
+            <span class="bg-zinc-100 text-zinc-800 font-bold px-2 py-1 rounded text-xs">
+                Mesa {{ p.mesa_id }}
+            </span>
+        </td>
+        
+        <td class="px-6 py-4 font-medium text-zinc-900">
+            {{ p.nombre_cliente }}
+        </td>
 
-                <!-- PEDIDOS -->
-                <Link href="/dashboard/pedidos" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition"
-                    :class="page.url.startsWith('/dashboard/pedidos')
-                        ? 'bg-zinc-900 text-white font-medium'
-                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-
-                    <i class="fa-solid fa-receipt text-sm"></i>
-
-                    <span class="text-sm">
-                        Pedidos
-                    </span>
-
-                </Link>
-
-                <!-- INVENTARIO -->
-                <div>
-
-                    <button @click="inventarioAbierto = !inventarioAbierto"
-                        class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition" :class="page.url.startsWith('/dashboard/productos')
-                            ? 'bg-zinc-900 text-white font-medium'
-                            : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-
-                        <div class="flex items-center gap-3">
-
-                            <i class="fa-solid fa-boxes-stacked text-sm"></i>
-
-                            <span class="text-sm">
-                                Inventario
-                            </span>
-
-                        </div>
-
-                        <i class="fa-solid text-xs transition-all duration-200" :class="inventarioAbierto
-                            ? 'fa-chevron-down'
-                            : 'fa-chevron-right'"></i>
-
-                    </button>
-
-                    <div v-if="inventarioAbierto" class="ml-6 mt-2 flex flex-col gap-1">
-
-                        <Link href="/dashboard/productos" class="text-left px-3 py-2 rounded-md text-sm transition"
-                            :class="page.url.startsWith('/dashboard/productos')
-                                ? 'bg-zinc-900/60 text-white'
-                                : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-                            Productos
-                        </Link>
-
-                        <Link href="/dashboard/productos"
-                            class="text-left px-3 py-2 rounded-md text-sm transition text-zinc-400 hover:bg-zinc-900 hover:text-white">
-                            Insumos
-                        </Link>
-
-                        <Link href="/dashboard/productos"
-                            class="text-left px-3 py-2 rounded-md text-sm transition text-zinc-400 hover:bg-zinc-900 hover:text-white">
-                            Control Stock
-                        </Link>
-
-                    </div>
-                </div>
-
-
-                <div>
-
-                    <button @click="roleAbierto = !roleAbierto"
-                        class="w-full flex items-center justify-between px-4 py-2.5 rounded-lg transition" :class="page.url.startsWith('/dashboard/roles')
-                            ? 'bg-zinc-900 text-white font-medium'
-                            : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-
-                        <div class="flex items-center gap-3">
-
-                            <i class="fa-solid fa-user-shield text-sm"></i>
-
-                            <span class="text-sm">
-                                Roles
-                            </span>
-
-                        </div>
-
-                        <i class="fa-solid text-xs transition-all duration-200" :class="roleAbierto
-                            ? 'fa-chevron-down'
-                            : 'fa-chevron-right'"></i>
-
-                    </button>
-
-                    <div v-if="roleAbierto" class="ml-6 mt-2 flex flex-col gap-1">
-
-                        <Link href="/dashboard/roles" class="text-left px-3 py-2 rounded-md text-sm transition" :class="page.url.startsWith('/dashboard/roles')
-                            ? 'bg-zinc-900/60 text-white'
-                            : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-                            Roles
-                        </Link>
-
-                        <Link href="/dashboard/roles"
-                            class="text-left px-3 py-2 rounded-md text-sm transition text-zinc-400 hover:bg-zinc-900 hover:text-white">
-                            Usuarios
-                        </Link>
-
-
-
-                    </div>
-                </div>
-                <!-- CONFIG -->
-
-                <Link href="/dashboard/reportes"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition" :class="page.url.startsWith('/dashboard/reportes')
-                        ? 'bg-zinc-900 text-white font-medium'
-                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-
-                    <i class="fa-solid fa-chart-bar text-sm"></i>
-
-                    <span class="text-sm">
-                        Reportes
-                    </span>
-
-                </Link>
-
-
-                <Link href="/dashboard/configuracion"
-                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition" :class="page.url.startsWith('/dashboard/configuracion')
-                        ? 'bg-zinc-900 text-white font-medium'
-                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
-
-                    <i class="fa-solid fa-gear text-sm"></i>
-
-                    <span class="text-sm">
-                        Configuración
-                    </span>
-
-                </Link>
-
-            </nav>
-
-        </aside>
-
-      <main class="flex-1 p-8">
-
-    <!-- HEADER BONITO -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-black text-zinc-900">
-            Todos los pedidos
-        </h1>
-  
+        <td class="px-6 py-4 text-gray-700 capitalize">{{ p.estado }}</td>
+        
+        <td class="px-6 py-4 font-semibold text-gray-700">
+            ${{ Number(p.total).toLocaleString('es-CL') }}
+        </td>
+        
+       
+    </tr>
+</tbody>
+                </table>
+            </section>
+        </main>
     </div>
 
-    <!-- FILTRO CARD -->
-    <div class="mb-6 bg-white p-4 rounded-xl shadow flex items-center justify-between">
+    <div v-if="modalAbierto" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl border border-zinc-100">
+            <h2 class="text-xl font-black text-zinc-900 mb-6">Nuevo Pedido</h2>
 
-        <div class="flex items-center gap-3">
-            <input
-                type="date"
-                v-model="fecha"
-                class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-            />
+            <form @submit.prevent="guardar" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input v-model="form.mesa_id" placeholder="N° Mesa" class="border-zinc-200 rounded-xl p-3 w-full" />
+                    <input v-model="form.nombre_cliente" placeholder="Cliente" class="border-zinc-200 rounded-xl p-3 w-full" />
+                </div>
 
-            <button
-                @click="buscar"
-                class="bg-zinc-900 hover:bg-zinc-800 text-white px-5 py-2 rounded-lg transition"
-            >
-                Buscar
-            </button>
+                <select v-model="prodSeleccionado" @change="agregarProducto" class="w-full border-zinc-200 rounded-xl p-3">
+                    <option :value="null">Seleccionar producto...</option>
+                    <option v-for="prod in productos" :key="prod.id" :value="prod">{{ prod.nombre }} (${{ prod.precio }})</option>
+                </select>
+
+                <div class="bg-zinc-50 p-3 rounded-xl max-h-40 overflow-y-auto">
+                    <p v-for="(item, index) in form.productos" :key="index" class="text-sm border-b py-1">
+                        {{ item.nombre }} - ${{ item.precio }}
+                    </p>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" @click="modalAbierto = false" class="px-5 py-2.5 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 rounded-xl">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-semibold bg-amber-500 text-white rounded-xl hover:bg-amber-600 shadow-md">Guardar Pedido</button>
+                </div>
+            </form>
         </div>
-
-
     </div>
-
-    <!-- TABLA CARD -->
-    <section class="bg-white rounded-xl shadow overflow-hidden">
-
-        <table class="w-full">
-
-            <!-- HEADER -->
-            <thead class="bg-zinc-900 text-white text-sm uppercase tracking-wide">
-                <tr>
-                    <th class="px-6 py-4 text-left">id</th>
-                    <th class="px-6 py-4 text-left">Mesa</th>
-                    <th class="px-6 py-4 text-left">Cliente</th>
-                    <th class="px-6 py-4 text-left">Estado</th>
-                    <th class="px-6 py-4 text-left">Origen</th>
-                    <th class="px-6 py-4 text-right">Total</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                <tr
-                    v-for="pedido in pedidos"
-                    :key="pedido.id"
-                    class="border-b hover:bg-gray-50 transition"
-                >
-
-                    <td class="px-6 py-4 font-semibold text-zinc-800">
-                        {{ pedido.id }}
-                    </td>
-
-                    <td class="px-6 py-4 text-gray-700">
-                        Mesa {{ pedido.mesa_id }}
-                    </td>
-
-                      <td class="px-6 py-4 text-gray-700">
-                        {{ pedido.nombre_cliente }}
-                      </td>
-
-                    <td class="px-6 py-4">
-
-                        <span
-                            class="px-3 py-1 rounded-full text-xs font-semibold"
-                            :class="pedido.estado === 'pendiente'
-                                ? 'bg-yellow-100 text-yellow-700'
-                                : 'bg-green-100 text-green-700'"
-                        >
-                            {{ pedido.estado }}
-                        </span>
-
-                    </td>
-
-                    <td class="px-6 py-4 text-gray-500">
-                        {{ pedido.tipo_pedido }}
-                    </td>
-
-                    <td class="px-6 py-4 text-right font-bold text-zinc-900">
-                        ${{ Number(pedido.total).toLocaleString('es-CL') }}
-                    </td>
-
-                </tr>
-
-                <!-- VACÍO -->
-                <tr v-if="pedidos.length === 0">
-                    <td colspan="5" class="text-center py-12 text-gray-400">
-                        No hay pedidos para esta fecha
-                    </td>
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </section>
-
-</main>
-
-    </div>
-
 </template>

@@ -16,22 +16,21 @@ class PedidoController extends Controller
 {
     public function store(Request $request)
     {
-        // 1. Modificamos la validación para tus tamaños reales y la movemos al producto
         $data = $request->validate([
-            'tipo_entrega'   => ['required', 'in:presencial'],
-            'mesa_id'        => ['required', 'integer', 'exists:mesas,id'],
+            'tipo_entrega'   => ['required', 'in:presencial,delivery'],
+            'mesa_id'        => ['nullable', 'integer', 'exists:mesas,id'],
             'nombre_cliente' => ['nullable', 'string', 'max:100'],
-            'token_cliente'  => ['required', 'string', 'max:255'],
-            
+
             'productos'            => ['required', 'array', 'min:1'],
             'productos.*.id'       => ['required', 'integer', 'exists:productos,id'],
             'productos.*.cantidad' => ['required', 'integer', 'min:1'],
-            // Cada producto define su propio tamaño (Los vasos se descuentan según esto)
-            'productos.*.tamano'   => ['required', 'in:nano,mini,normal,max'], 
+            'productos.*.tamano'   => ['required', 'in:nano,mini,normal,max'],
         ]);
 
-        $pedidoActivo = Pedido::where('mesa_id', $data['mesa_id'])
-            ->where('token_cliente', $data['token_cliente'])
+        // 🔐 usuario autenticado (ya protegido por middleware)
+        $user = $request->user();
+
+        $pedidoActivo = Pedido::where('user_id', $user->id)
             ->whereIn('estado', ['pendiente', 'en_preparacion'])
             ->exists();
 
@@ -42,56 +41,64 @@ class PedidoController extends Controller
         }
 
         try {
-            $pedido = DB::transaction(function () use ($data) {
+
+            $pedido = DB::transaction(function () use ($data, $user) {
+
                 $total = 0;
 
                 $pedido = Pedido::create([
-                    'tipo_pedido'    => 'presencial',
+                    'user_id'        => $user->id,
+                    'tipo_pedido'    => $data['tipo_entrega'],
                     'mesa_id'        => $data['mesa_id'],
-                    'token_cliente'  => $data['token_cliente'],
                     'nombre_cliente' => $data['nombre_cliente'],
                     'estado'         => 'pendiente',
                     'total'          => 0,
                 ]);
 
-                Mesa::where('id', $data['mesa_id'])->update([
-                    'estado' => 'ocupada'
-                ]);
+                // mesa opcional
+                if (!empty($data['mesa_id'])) {
+                    Mesa::where('id', $data['mesa_id'])
+                        ->update(['estado' => 'ocupada']);
+                }
 
                 foreach ($data['productos'] as $item) {
+
                     $producto = Producto::findOrFail($item['id']);
 
                     $subtotal = $producto->precio * $item['cantidad'];
                     $total += $subtotal;
 
-                    // Registramos el detalle con el tamaño específico de ESTE producto
                     $pedido->detalles()->create([
                         'producto_id'     => $producto->id,
                         'cantidad'        => $item['cantidad'],
                         'precio_unitario' => $producto->precio,
                         'subtotal'        => $subtotal,
-                        'tamano'          => $item['tamano'], 
+                        'tamano'          => $item['tamano'],
                     ]);
 
-                    // Buscamos la receta que coincida con el Producto Y el Tamaño seleccionado
                     $receta = ProductoInsumo::where('producto_id', $producto->id)
                         ->where('tamano', $item['tamano'])
                         ->get();
 
                     if ($receta->isEmpty()) {
-                        throw new \Exception("No existe una receta configurada para {$producto->nombre} en tamaño {$item['tamano']}.");
+                        throw new \Exception(
+                            "No hay receta para {$producto->nombre} ({$item['tamano']})"
+                        );
                     }
 
-                    foreach ($receta as $itemReceta) {
-                        $insumo = Insumo::findOrFail($itemReceta->insumo_id);
+                    foreach ($receta as $r) {
 
-                        $cantidadADescontar = $itemReceta->cantidad * $item['cantidad'];
+                        $insumo = Insumo::findOrFail($r->insumo_id);
 
-                        if ($insumo->stock < $cantidadADescontar) {
-                            throw new \Exception("Stock insuficiente de {$insumo->nombre} para preparar el tamaño {$item['tamano']}");
+                        $cantidad = $r->cantidad * $item['cantidad'];
+
+                        if ($insumo->stock < $cantidad) {
+                            throw new \Exception(
+                                "Stock insuficiente de {$insumo->nombre}"
+                            );
                         }
 
-                        $insumo->decrement('stock', $cantidadADescontar);
+                        $insumo->decrement('stock', $cantidad);
                     }
                 }
 
@@ -103,12 +110,11 @@ class PedidoController extends Controller
             });
 
         } catch (Throwable $e) {
+
             return back()->withErrors([
                 'pedido' => $e->getMessage()
             ]);
         }
-
-        session(['token_cliente' => $data['token_cliente']]);
 
         return back()->with('success', 'Pedido creado correctamente');
     }

@@ -13,7 +13,7 @@ const logout = () => {
 <template>
   <div>
     <nav
-      class="flex  justify-between items-center px-10  py-3 sticky top-0 z-50 bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800 shadow-2xl">
+      class="flex  justify-between items-center px-10  py-3 sticky top-0 z-50 bg-zinc-950  shadow-2xl">
 
       <div class="flex items-center gap-3 font-bold">
         <Link href="/">

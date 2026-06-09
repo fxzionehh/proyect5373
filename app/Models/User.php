@@ -30,4 +30,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function pedidos()
+{
+    return $this->hasMany(Pedido::class);
+}
+
 }

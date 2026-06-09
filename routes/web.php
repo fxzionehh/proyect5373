@@ -12,6 +12,8 @@ use App\Http\Controllers\Client\PedidoController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ConfiguracionController;
 use App\Http\Controllers\Admin\ReporteController;
+use App\Http\Controllers\Admin\InsumoController;
+
 
 Route::get('/', [MenuController::class, 'index'])->name('inicio');
 Route::get('/login', [LoginController::class, 'create'])->name('login');
@@ -19,18 +21,12 @@ Route::post('/login', [LoginController::class, 'store']);
 Route::post('/logout', [LoginController::class, 'destroy']);
 
 
-Route::get('/mesa/{mesa}', [MenuController::class, 'mesa'])->name('mesa');
-
-
-//cliente !!Corregir  a 404 para que no entren a este ruta /pedidos.
-Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');
-
-
-
-
 
 Route::middleware(['auth', 'role:administrador'])->group(function () {
 
+Route::get('/mesa/{mesa}', [MesaController::class, 'show'])
+    ->name('mesas.show');
+    
     Route::get('/dashboard/roles', [RoleController::class, 'index'])
         ->name('dashboard.roles.index');
 
@@ -53,30 +49,52 @@ Route::middleware(['auth', 'role:administrador'])->group(function () {
     Route::get('/dashboard/pedidos', [PedidosController::class, 'index'])
         ->name('dashboard.pedidos.index');
 
-    Route::get('/dashboard/configuracion', [ConfiguracionController::class, 'index'])
-        ->name('dashboard.configuracion.index');
+    Route::post('/dashboard/pedidos', [PedidosController::class, 'store'])
+        ->name('dashboard.pedidos.store');
 
-    Route::patch('/dashboard/configuracion/mesas/{mesa}/toggle', [MesaController::class, 'toggleEstado']);
-    Route::post('/dashboard/configuracion/mesas/{mesa}/generar-qr', [MesaController::class, 'generarQr']);
+    Route::put('/dashboard/pedidos/{pedido}', [PedidosController::class, 'update'])
+        ->name('dashboard.pedidos.update');
 
+    Route::delete('/dashboard/pedidos/{pedido}', [PedidosController::class, 'destroy'])
+        ->name('dashboard.pedidos.destroy');
     Route::get('/dashboard/reportes', [ReporteController::class, 'index'])
     ->name('reportes.index');
 
+    Route::get('/dashboard/insumos', [InsumoController::class, 'index'])
+        ->name('dashboard.insumos.index');
+
+    Route::post('/dashboard/insumos', [InsumoController::class, 'store'])
+        ->name('dashboard.insumos.store');
+
+    Route::put('/dashboard/insumos/{insumo}', [InsumoController::class, 'update'])
+        ->name('dashboard.insumos.update');
+
+    Route::delete('/dashboard/insumos/{insumo}', [InsumoController::class, 'destroy'])
+        ->name('dashboard.insumos.destroy');
+Route::get('/dashboard/mesas/{mesa}/edit', [MesaController::class, 'edit'])->name('dashboard.mesas.edit');
     
-});
+    // ... tus otras rutas ...
+    Route::get('/dashboard/mesas', [MesaController::class, 'index'])->name('dashboard.mesas.index');
+    Route::post('/dashboard/mesas', [MesaController::class, 'store'])->name('dashboard.mesas.store');
+    Route::delete('/dashboard/mesas/{mesa}', [MesaController::class, 'destroy'])->name('dashboard.mesas.destroy');
+    });
 
-Route::middleware(['auth', 'role:barista'])->group(function () {
+    Route::middleware(['auth', 'role:barista'])->group(function () {
 
-    Route::get('/barista/pedidos', [PrepararPedidoController::class, 'index'])
-        ->name('barista.index');
+        Route::get('/barista/pedidos', [PrepararPedidoController::class, 'index'])
+            ->name('barista.index');
 
-    Route::post('/barista/pedidos/{pedido}/estado', [PrepararPedidoController::class, 'store'])
-        ->name('barista.pedidos.store');
+        Route::post('/barista/pedidos/{pedido}/estado', [PrepararPedidoController::class, 'store'])
+            ->name('barista.pedidos.store');
 
-    Route::get('/barista/mesas', [MesaController::class, 'index'])
-        ->name('barista.mesas.index');
+       
 
-    Route::post('/barista/mesas/{mesa}/liberar', [MesaController::class, 'liberarMesa']);
-});
+    });
 
 
+    Route::middleware(['auth', 'role:cliente'])->group(function () {
+// routes/web.php
+
+// La ruta ahora es intuitiva: GET /mesa/{mesa}
+
+    });

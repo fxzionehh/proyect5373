@@ -29,7 +29,7 @@ class LoginController extends Controller{
 
      
         if ($user->role?->nombre === 'administrador') {
-            return redirect('/dashboard/productos');
+            return redirect('/dashboard/pedidos');
         }
 
        
@@ -37,7 +37,10 @@ class LoginController extends Controller{
             return redirect('/barista/pedidos');
         }
 
-       
+       if ($user->role?->nombre === 'cliente') {
+            return redirect('/client');
+        }
+
         Auth::logout();
 
         return redirect('/login')

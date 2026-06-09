@@ -11,9 +11,7 @@ class Mesa extends Model
 
     protected $fillable = ['numero', 'estado', 'activa', 'qr_token'];
 
-    /**
-     * Forzar a Laravel a buscar por qr_token en las rutas de forma automática
-     */
+   
     public function getRouteKeyName()
     {
         return 'qr_token';

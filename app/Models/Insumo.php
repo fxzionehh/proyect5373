@@ -14,13 +14,5 @@ class Insumo extends Model
         'unidad'
     ];
 
-    public function productos()
-    {
-        return $this->belongsToMany(
-            Producto::class,
-            'producto_insumo'
-        )
-        ->withPivot('cantidad', 'tamano')
-        ->withTimestamps();
-    }
+
 }
