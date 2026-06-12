@@ -109,57 +109,92 @@ const limpiar = () => {
                                 {{ insumo.stock }}
                             </td>
                             <td class="px-6 py-4">
-                               <div class="flex justify-end gap-2">
-    <button @click="abrirEditar(insumo)"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-600 transition">
-        <i class="fa-solid fa-pen text-[10px]"></i>
-        <span>Editar</span>
-    </button>
+                                <div class="flex justify-end gap-2">
+                                    <button @click="abrirEditar(insumo)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-600 transition">
+                                        <i class="fa-solid fa-pen text-[10px]"></i>
+                                        <span>Editar</span>
+                                    </button>
 
-    <button @click="eliminar(insumo)"
-        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition">
-        <i class="fa-solid fa-trash text-[10px]"></i>
-        <span>Eliminar</span>
-    </button>
-</div>
+                                    <button @click="eliminar(insumo)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition">
+                                        <i class="fa-solid fa-trash text-[10px]"></i>
+                                        <span>Eliminar</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </section>
 
-          <div v-if="modalAbierto" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-zinc-100">
-        <h2 class="text-xl font-black text-zinc-900 mb-6">
-            {{ editando ? 'Editar insumo' : 'Crear nuevo insumo' }}
-        </h2>
+            <div v-if="modalAbierto"
+                class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
 
-        <form @submit.prevent="guardar" class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold text-zinc-500 uppercase mb-1 ml-1">Nombre</label>
-                <input v-model="form.nombre" type="text" placeholder="Ej: Vaso Nano" required
-                    class="w-full border-zinc-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500 transition">
-            </div>
+                <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
 
-            <div>
-                <label class="block text-xs font-bold text-zinc-500 uppercase mb-1 ml-1">Stock inicial</label>
-                <input v-model="form.stock" type="number" placeholder="0" required
-                    class="w-full border-zinc-200 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-amber-500 transition">
-            </div>
+                    <!-- HEADER -->
+                    <div class="bg-zinc-900 text-white px-5 py-4 flex justify-between items-center">
+                        <h2 class="font-bold text-lg">
+                            {{ editando ? 'Editar insumo' : 'Nuevo insumo' }}
+                        </h2>
 
-            <div class="flex items-center justify-end gap-2 pt-4">
-                <button type="button" @click="cerrarModal" 
-                    class="px-5 py-2.5 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 rounded-xl transition">
-                    Cancelar
-                </button>
-                <button type="submit" :disabled="form.processing"
-                    class="px-5 py-2.5 text-sm font-semibold bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition disabled:opacity-50 shadow-md">
-                    {{ form.processing ? 'Guardando...' : 'Guardar insumo' }}
-                </button>
+                        <button @click="cerrarModal" class="text-white/70 hover:text-white">
+                            ✕
+                        </button>
+                    </div>
+
+                    <!-- FORM -->
+                    <form @submit.prevent="guardar" class="p-6 space-y-5">
+
+                        <!-- NOMBRE -->
+                        <div>
+                            <label class="text-xs font-bold text-zinc-500 uppercase">Nombre</label>
+                            <input v-model="form.nombre" type="text" placeholder="Ej: Vaso térmico"
+                                class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none" />
+                        </div>
+
+                        <!-- STOCK -->
+                        <div>
+                            <label class="text-xs font-bold text-zinc-500 uppercase">Stock inicial</label>
+                            <input v-model="form.stock" type="number" placeholder="0"
+                                class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none" />
+                        </div>
+
+                        <!-- CARD PREVIEW -->
+                        <div class="bg-zinc-50 border rounded-xl p-4">
+                            <p class="text-xs text-zinc-500 uppercase mb-2">Vista previa</p>
+
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold text-zinc-800">
+                                    {{ form.nombre || 'Nombre insumo' }}
+                                </span>
+
+                                <span class="text-sm font-bold text-amber-600">
+                                    Stock: {{ form.stock || 0 }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="flex justify-end gap-2 pt-2">
+
+                            <button type="button" @click="cerrarModal" class="px-4 py-2 border rounded-xl text-sm">
+                                Cancelar
+                            </button>
+
+                            <button type="submit" :disabled="form.processing"
+                                class="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-50">
+                                {{ form.processing ? 'Guardando...' : 'Guardar' }}
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
             </div>
-        </form>
-    </div>
-</div>
 
         </main>
     </div>

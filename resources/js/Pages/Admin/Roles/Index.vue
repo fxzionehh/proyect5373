@@ -57,56 +57,60 @@ const toggleMenu = (menu) => {
             </div>
 
 
-            <section class="bg-white rounded-xl overflow-hidden border border-gray-200">
+         <section class="bg-white rounded-xl overflow-hidden border border-gray-200">
 
-                <table class="w-full">
+    <table class="w-full">
 
-                    <thead class="bg-gray-100 text-gray-500 text-sm uppercase">
-                        <tr>
-                            <th class="px-6 py-4 text-left">Nombre Rol</th>
-                            <th class="px-6 py-4 text-left">Fecha creación</th>
-                            <th class="px-6 py-4 text-right">Acción</th>
-                        </tr>
-                    </thead>
+        <thead class="bg-zinc-900 text-white text-sm uppercase tracking-wide">
+            <tr>
+                <th class="px-6 py-4 text-left">Nombre Rol</th>
+                <th class="px-6 py-4 text-left">Fecha creación</th>
+                <th class="px-6 py-4 text-right">Acción</th>
+            </tr>
+        </thead>
 
-                    <tbody>
+        <tbody>
 
-                        <tr v-for="rol in roles" :key="rol.id" class="border-t hover:bg-gray-50 transition">
+            <tr
+                v-for="rol in roles"
+                :key="rol.id"
+                class="border-t hover:bg-gray-50 transition"
+            >
 
-                            <td class="px-6 py-4 font-medium text-zinc-800">
-                                {{ rol.nombre }}
-                            </td>
+                <td class="px-6 py-4 font-medium text-zinc-800">
+                    {{ rol.nombre }}
+                </td>
 
-                            <td class="px-6 py-4 font-semibold text-gray-700">
-                                {{ rol.created_at }}
-                            </td>
+                <td class="px-6 py-4 font-semibold text-gray-700">
+                    {{ rol.created_at }}
+                </td>
 
-                            <td class="px-6 py-4">
-                                <div class="flex justify-end">
+                <td class="px-6 py-4">
+                    <div class="flex justify-end">
 
-                                    <Link :href="`/dashboard/roles/${rol.id}/edit`"
-                                        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-900 text-white text-sm font-semibold hover:bg-zinc-800 transition">
+                        <Link
+                            :href="`/dashboard/roles/${rol.id}/edit`"
+                            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition"
+                        >
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </Link>
 
-                                        <i class="fa-solid fa-pen text-xs"></i>
+                    </div>
+                </td>
 
-                                    </Link>
+            </tr>
 
-                                </div>
-                            </td>
+            <tr v-if="roles.length === 0">
+                <td colspan="3" class="px-6 py-10 text-center text-gray-500">
+                    No hay roles registrados.
+                </td>
+            </tr>
 
-                        </tr>
+        </tbody>
 
-                        <tr v-if="roles.length === 0">
-                            <td colspan="3" class="px-6 py-10 text-center text-gray-500">
-                                No hay roles registrados.
-                            </td>
-                        </tr>
+    </table>
 
-                    </tbody>
-
-                </table>
-
-            </section>
+</section>
 
         </main>
 

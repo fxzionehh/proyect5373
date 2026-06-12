@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pedido;
 use App\Models\Producto;
 use App\Models\DetallePedido;
+use App\Models\Mesa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -17,12 +18,13 @@ class PedidosController extends Controller
         return Inertia::render('Admin/Pedidos/Index', [
             'pedidos' => Pedido::with('detalles.producto')->latest()->get(),
             'productos' => Producto::all(),
-            
+            'mesas' => Mesa::all(),
         ]);
     }
 
    public function store(Request $request)
 {
+   
     $data = $request->validate([
         'mesa_id' => ['required', 'integer'],
         'nombre_cliente' => ['required', 'string'],
@@ -32,7 +34,7 @@ class PedidosController extends Controller
         'productos.*.id' => ['required', 'exists:productos,id'],
         'productos.*.cantidad' => ['required', 'integer', 'min:1'],
     ]);
-
+ //dd($data);
     return DB::transaction(function () use ($data) {
         // 1. Crear el Pedido
         $pedido = Pedido::create([

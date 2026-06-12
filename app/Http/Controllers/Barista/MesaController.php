@@ -4,74 +4,95 @@ namespace App\Http\Controllers\Barista;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mesa;
+use App\Models\Producto;
+use App\Models\Pedido;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class MesaController extends Controller
 {
-    // Muestra la lista de mesas
+    // 📋 Lista de mesas
     public function index() {
         return Inertia::render('Admin/Mesas/Index', [
             'mesas' => Mesa::orderBy('numero')->get()
         ]);
     }
 
-  public function edit($id) {
+    // 🔎 Edit (API simple)
+    public function edit($id) {
+        $mesa = Mesa::find($id);
 
-    $mesa = Mesa::find($id);
-    
-    if (!$mesa) {
-        return response()->json([
-            'error' => 'No encontrada',
-        ], 404);
+        if (!$mesa) {
+            return response()->json([
+                'error' => 'No encontrada',
+            ], 404);
+        }
+
+        return response()->json($mesa);
     }
-    
-    return response()->json($mesa);
-}
 
-
-// Dentro de tu clase MesaController
-
-public function show($id) 
-{
-    $mesa = Mesa::findOrFail($id);
-
-    // Si quieres que el admin vea la mesa en un dashboard, 
-    // pero el cliente vea el menú, puedes diferenciar por el usuario:
-    
-    return Inertia::render('Client/Index', [
-        'mesa' => $mesa
-    ]);
-}
-
-  public function store(Request $request) 
-{
-    $id = $request->id;
-
-    $validated = $request->validate([
-        'numero' => 'required|unique:mesas,numero,' . ($id ?? 'NULL'),
-        'activa' => 'required|integer|in:1,2'
-    ]);
-
-    if ($id) {
-        // ACTUALIZACIÓN EXPLÍCITA
+    // 🍽️ Entrada cliente a mesa (PROTEGIDA POR QR)
+    public function show($id, Request $request)
+    {
+       
         $mesa = Mesa::findOrFail($id);
-        $mesa->numero = $validated['numero'];
-        $mesa->activa = $validated['activa'];
-        $mesa->save();
-    } else {
-        // CREACIÓN EXPLÍCITA
-        $mesa = new Mesa();
-        $mesa->numero = $validated['numero'];
-        $mesa->activa = $validated['activa'];
-        // Si tienes más campos, los pones aquí abajo:
-        // $mesa->capacidad = $request->capacidad;
-        $mesa->save();
+
+        // 🔐 VALIDACIÓN QR
+        if (!$request->has('token') || $request->token !== $mesa->qr_token) {
+            abort(403, 'Acceso no autorizado a la mesa');
+        }
+
+        $productos = Producto::all();
+
+        $pedidoActual = Pedido::with('detalles.producto')
+            ->where('mesa_id', $mesa->id)
+            ->whereIn('estado', ['pendiente', 'en_preparacion'])
+            ->latest()
+            ->first();
+
+        return Inertia::render('Client/Index', [
+            'mesaActual' => $mesa,
+            'productos' => $productos,
+            'pedidoActual' => $pedidoActual,
+            'puedePedir' => $pedidoActual ? false : true,
+        ]);
     }
 
-    return back();
+    // 💾 Crear / actualizar mesa
+    public function store(Request $request)
+    {
+        $id = $request->id;
+
+        $validated = $request->validate([
+            'numero' => 'required|unique:mesas,numero,' . ($id ?? 'NULL'),
+            'activa' => 'required|integer|in:1,2'
+        ]);
+
+        if ($id) {
+    // ✏️ ACTUALIZAR
+    $mesa = Mesa::findOrFail($id);
+    $mesa->numero = $validated['numero'];
+    $mesa->activa = $validated['activa'];
+
+    // 🔐 ASEGURAR TOKEN SI NO EXISTE
+    if (!$mesa->qr_token) {
+        $mesa->qr_token = Str::random(20);
+    }
+
+    $mesa->save();
+} else {
+    // ➕ CREAR
+    $mesa = new Mesa();
+    $mesa->numero = $validated['numero'];
+    $mesa->activa = $validated['activa'];
+    $mesa->qr_token = Str::random(20);
+    $mesa->save();
 }
-    // Elimina la mesa
+        return back();
+    }
+
+    // 🗑️ Eliminar mesa
     public function destroy(Mesa $mesa) {
         $mesa->delete();
         return back();

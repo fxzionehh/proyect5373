@@ -34,7 +34,7 @@ class LoginController extends Controller{
 
        
         if ($user->role?->nombre === 'barista') {
-            return redirect('/barista/pedidos');
+            return redirect('/preparacion');
         }
 
        if ($user->role?->nombre === 'cliente') {

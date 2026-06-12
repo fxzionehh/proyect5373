@@ -22,11 +22,14 @@ class ProductoController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-            'precio' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
-        ]);
+      $data = $request->validate([
+    'nombre' => ['required', 'string', 'max:100'],
+    'precio_nano' => ['required', 'numeric', 'min:0'],
+    'precio_mini' => ['required', 'numeric', 'min:0'],
+    'precio_normal' => ['required', 'numeric', 'min:0'],
+    'precio_max' => ['required', 'numeric', 'min:0'],
+    'stock' => ['required', 'integer', 'min:0'],
+]);
 
         Producto::create($data);
 
@@ -35,11 +38,14 @@ class ProductoController extends Controller
 
     public function update(Request $request, Producto $producto)
     {
-        $data = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-            'precio' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
-        ]);
+      $data = $request->validate([
+    'nombre' => ['required', 'string', 'max:100'],
+    'precio_nano' => ['required', 'numeric', 'min:0'],
+    'precio_mini' => ['required', 'numeric', 'min:0'],
+    'precio_normal' => ['required', 'numeric', 'min:0'],
+    'precio_max' => ['required', 'numeric', 'min:0'],
+    'stock' => ['required', 'integer', 'min:0'],
+]);
 
         $producto->update($data);
 

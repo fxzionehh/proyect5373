@@ -1,35 +1,17 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
 
 const props = defineProps({
     productos: Array,
     mesaActual: Object,
-    puedePedir: Boolean,
     pedidoActual: Object,
+    puedePedir: Boolean,
 })
 
-console.log(props)
-let tokenCliente = localStorage.getItem('token_cliente')
-
-if (!tokenCliente) {
-    tokenCliente = crypto.randomUUID()
-    localStorage.setItem('token_cliente', tokenCliente)
-}
-
-const mostrarModal = ref(false)
+const paso = ref(1)
 const productoSeleccionado = ref(null)
-const toast = ref(null)
-
-const form = useForm({
-    tipo_entrega: 'presencial',
-    mesa_id: props.mesaActual?.id ?? '',
-    nombre_cliente: '',
-    token_cliente: tokenCliente,
-    productos: [], // Aquí meteremos el objeto completo con su tamaño
-    tamano: 'normal', // Valor por defecto inicial para el select de la interfaz
-})
 
 const estadoTexto = {
     pendiente: 'Pedido recibido',
@@ -37,279 +19,146 @@ const estadoTexto = {
     listo: 'Listo para retiro',
 }
 
-const mostrarToast = (mensaje) => {
-    toast.value = mensaje
-    setTimeout(() => {
-        toast.value = null
-    }, 3000)
+const mesaId = computed(() => props.mesaActual?.id ?? null)
+
+const precioSeleccionado = computed(() => {
+    if (!productoSeleccionado.value) return 0
+    return productoSeleccionado.value[`precio_${form.tamano}`] || 0
+})
+
+const form = useForm({
+    mesa_id: mesaId.value,
+    nombre_cliente: '',
+    producto_id: null,
+    tamano: 'normal',
+})
+
+const seleccionarProducto = (p) => {
+    if (!props.puedePedir || !mesaId.value) return
+    productoSeleccionado.value = p
+    form.producto_id = p.id
+    paso.value = 2
 }
 
-const abrirModalPedido = (producto) => {
-    if (props.pedidoActual) {
-        mostrarToast('Ya tienes un pedido activo')
-        return
-    }
-
-    if (!props.puedePedir || producto.stock <= 0) return
-
-    productoSeleccionado.value = producto
-    form.tamano = 'normal' // Reseteamos al tamaño estándar cada vez que abre el modal
-    mostrarModal.value = true
-}
-
-const cerrarModalPedido = () => {
-    mostrarModal.value = false
-    productoSeleccionado.value = null
-    form.productos = []
-}
-
-const confirmarPedido = () => {
-    // CAPA DE SEGURIDAD: Inyectamos el tamaño elegido dentro del array de productos
-    form.productos = [
-        {
-            id: productoSeleccionado.value.id,
-            cantidad: 1,
-            tamano: form.tamano // Aquí acoplamos el tamaño real (nano, mini, normal, max)
-        }
-    ]
-
-    console.log(form)
-
+const irNombre = () => paso.value = 3
+const volver = () => paso.value--
+const confirmar = () => {
+    if (!mesaId.value || !form.nombre_cliente) return
     form.post('/pedidos', {
         preserveScroll: true,
         onSuccess: () => {
-            cerrarModalPedido()
-            window.location.reload()
-        },
-        onError: (errors) => {
-            if (errors.pedido) {
-                mostrarToast(errors.pedido)
-            } else {
-                mostrarToast('No se pudo crear el pedido')
-            }
-            console.log(errors)
-        },
+            paso.value = 1
+            productoSeleccionado.value = null
+            form.reset('nombre_cliente', 'producto_id', 'tamano')
+        }
     })
 }
 </script>
+
 <template>
-    <div class="h-auto bg-white w-full">
+<div class="min-h-screen bg-black text-white font-sans selection:bg-amber-400 selection:text-black">
+    <navSito />
 
-        <navSito />
-
-
-        <section class="flex justify-between bg-gradient-to-br from-zinc-950 to-zinc-900 px-8 py-10">
-            <h1 class="text-4xl font-black text-white">
-                Menú
-            </h1>
-
-
-        </section>
-
-        <main class="max-w-7xl mx-auto px-4 py-8">
-            <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8 items-start">
-
-
-                <section>
-                    <div class="mb-6">
-
-
-                        <h1 class="text-3xl font-black text-zinc-950">
-
-                            {{
-                                props.mesaActual?.numero
-                                    ? `Mesa ${props.mesaActual.numero}`
-                                    : 'Catálogo'
-                            }}
-
-                        </h1>
-
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                        <article v-for="p in productos" :key="p.id"
-                            class="bg-white rounded-3xl p-5 shadow-sm border border-zinc-200 hover:shadow-md transition-all">
-                            <div>
-                                <div class="flex justify-between items-start gap-3">
-                                    <div>
-                                        <h2 class="text-lg font-black text-zinc-900">
-                                            {{ p.nombre }}
-                                        </h2>
-
-                                        <p class="text-sm font-black text-zinc-500 mt-1">
-                                            ${{ Number(p.precio).toLocaleString('es-CL') }}
-                                        </p>
-                                    </div>
-
-                                    <span class="text-[10px] font-black px-2 py-1 rounded-full" :class="p.stock > 0
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-red-100 text-red-700'">
-
-                                        {{ p.stock > 0 ? 'Disponible' : 'Agotado' }}
-
-                                    </span>
-                                </div>
-
-                                <button v-if="puedePedir && !props.pedidoActual" type="button"
-                                    @click.stop="abrirModalPedido(p)" :disabled="p.stock <= 0"
-                                    class="w-full mt-5 py-3 px-4 rounded-2xl text-sm font-black transition-all disabled:opacity-40"
-                                    :class="p.stock > 0
-                                        ? 'bg-zinc-950 text-white hover:bg-sky-500'
-                                        : 'bg-zinc-200 text-zinc-400'">
-
-                                    {{ p.stock > 0 ? 'Pedir' : 'Agotado' }}
-
-                                </button>
-
-
-                            </div>
-                        </article>
-                    </div>
-                </section>
-
-
-                <aside class="lg:sticky lg:top-6">
-                    <div class="bg-white border border-zinc-200 rounded-1xl shadow-sm overflow-hidden">
-
-                        <div class="bg-zinc-950 text-white p-5">
-
-
-                            <h2 class="text-xl font-black">
-                                Tu pedido
-                            </h2>
-                        </div>
-
-                        <div v-if="props.pedidoActual" class="p-5">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="text-sm text-zinc-500">
-                                        Estado actual
-                                    </p>
-
-                                    <p class="text-lg font-black text-zinc-950">
-                                        {{ estadoTexto[props.pedidoActual.estado] }}
-                                    </p>
-                                </div>
-
-
-                            </div>
-
-                            <div class="mt-5 space-y-3">
-
-                                <div v-for="detalle in props.pedidoActual.detalles" :key="detalle.id"
-                                    class="flex justify-between items-start border-b border-zinc-100 pb-3">
-
-                                    <div>
-
-                                        <p class="text-sm font-black text-zinc-900">
-                                            {{ detalle.producto.nombre }}
-                                        </p>
-
-                                        <p v-if="detalle.tamano" class="text-xs text-zinc-500 capitalize mt-1">
-                                            {{ detalle.tamano }}
-                                        </p>
-
-                                        <p class="text-xs text-zinc-400 mt-1">
-                                            Cantidad: x{{ detalle.cantidad }}
-                                        </p>
-
-                                    </div>
-
-                                    <div class="text-right">
-
-                                        <p class="text-sm font-black text-zinc-950">
-                                            ${{ Number(detalle.subtotal).toLocaleString('es-CL') }}
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                                <!-- TOTAL -->
-                                <div class="flex justify-between items-center pt-4">
-
-                                    <p class="text-sm font-black text-zinc-500">
-                                        Total
-                                    </p>
-
-                                    <p class="text-xl font-black text-zinc-950">
-                                        ${{
-                                            Number(props.pedidoActual.total).toLocaleString('es-CL')
-                                        }}
-                                    </p>
-
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div v-else class="p-5">
-                            <div class="bg-zinc-100 rounded-2xl p-5 text-center">
-                                <p class="text-sm font-bold text-zinc-700">
-                                    No hay pedidos registrados.
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                </aside>
-
-            </div>
-        </main>
-
-
-
+    <div v-if="!mesaActual" class="flex flex-col items-center justify-center min-h-[80vh] text-center px-8">
+        <h2 class="text-3xl font-black uppercase tracking-tighter">Mesa no encontrada</h2>
     </div>
 
-    <div v-if="mostrarModal" class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center px-4">
-        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl">
-            <h2 class="text-2xl font-black text-zinc-950">
-                Crear Pedido
-            </h2>
+    <div v-else class="max-w-2xl mx-auto pb-10">
+        <header class="p-6 border-b border-zinc-800 flex justify-between items-center bg-black sticky top-0 z-20">
+            <div>
+                <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Estás en</p>
+                <h1 class="text-2xl font-black">MESA {{ mesaActual.numero }}</h1>
+            </div>
+            <div v-if="pedidoActual" class="px-4 py-1.5 bg-amber-500 text-black rounded-full text-[10px] font-black uppercase animate-pulse">
+                {{ estadoTexto[pedidoActual.estado] }}
+            </div>
+        </header>
 
-            <p class="mt-3 text-zinc-600">
-                Producto:
-                <strong>{{ productoSeleccionado?.nombre }}</strong>
-            </p>
+        <div v-if="paso === 1" class="p-6 animate-in slide-in-from-bottom-10">
+    <div class="flex justify-between items-end mb-6">
+        <h2 class="text-3xl font-black tracking-tighter uppercase italic text-zinc-500">¿Qué café quieres?</h2>
+        <div class="flex gap-2">
+            <div class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-500">←</div>
+            <div class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white">→</div>
+        </div>
+    </div>
+    
+    <div class="flex gap-4 overflow-x-auto pb-8 snap-x scrollbar-hide">
+        <button v-for="p in productos" :key="p.id" 
+            @click="seleccionarProducto(p)"
+            class="min-w-[70%] snap-center group bg-zinc-900 p-8 rounded-[2rem] text-left transition-all border-2 border-transparent hover:border-amber-500 active:scale-95 relative overflow-hidden">
+            
+            <div class="relative z-10 w-20 h-20 bg-black/50 rounded-full flex items-center justify-center mb-8 mx-auto shadow-inner border border-zinc-800">
+                <i class="fa-solid fa-mug-hot text-3xl text-amber-500"></i>
+            </div>
+            
+            <div class="text-center">
+                <h3 class="font-black text-2xl uppercase leading-tight">{{ p.nombre }}</h3>
+                <span class="inline-block mt-4 px-4 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                    Seleccionar
+                </span>
+            </div>
+        </button>
+    </div>
+</div>
 
-            <p class="mt-1 text-zinc-600">
-                Precio:
-                <strong>
-                    ${{ Number(productoSeleccionado?.precio).toLocaleString('es-CL') }}
-                </strong>
-            </p>
+        <div v-else-if="paso === 2" class="p-6 animate-in slide-in-from-right-10">
+            <button @click="volver" class="mb-8 text-zinc-500 font-bold hover:text-white flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> VOLVER
+            </button>
+            
+            <div class="mb-8 bg-zinc-900 p-6 rounded-3xl flex items-center gap-4">
+                <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center text-2xl">☕</div>
+                <h2 class="text-3xl font-black uppercase italic tracking-tighter">{{ productoSeleccionado.nombre }}</h2>
+            </div>
+            
+           <div class="grid grid-cols-2 gap-3">
+    <button 
+        v-for="t in ['nano', 'mini', 'normal', 'max']" 
+        :key="t"
+        @click="form.tamano = t"
+        :class="form.tamano === t 
+            ? 'bg-amber-500 text-black border-amber-500' 
+            : 'bg-zinc-900 text-white border-zinc-800'"
+        class=" flex flex-col items-center justify-center rounded-3xl border-2 transition-all active:scale-95 hover:border-zinc-500"
+    >
+        <span class="font-black text-xl uppercase">{{ t }}</span>
+        
+        <span class="text-xs font-bold opacity-70 mt-1">
+            ${{ Number(productoSeleccionado[`precio_${t}`]).toLocaleString('es-CL') }}
+        </span>
+    </button>
+</div>
 
-
-          <p class="mt-3 font-bold text-zinc-700 text-sm">
-    Selecciona el Tamaño:
-</p>
-
-<select v-model="form.tamano" class="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3 bg-white text-zinc-900 font-medium focus:outline-none focus:ring-2 focus:ring-zinc-950">
-    <option value="nano">Nano (120ml)</option>
-    <option value="mini">Mini (240ml)</option>
-    <option value="normal">Normal (360ml)</option>
-    <option value="max">Max (480ml)</option>
-</select>
-
-            <div class="mt-5">
-                <label class="text-sm font-bold text-zinc-700">
-                    Nombre:
-                </label>
-
-                <input v-model="form.nombre_cliente" type="text"
-                    class="mt-2 w-full rounded-2xl border border-zinc-300 px-4 py-3">
+            <div class="mt-8 p-6 bg-zinc-900 rounded-3xl flex justify-between items-center">
+                <span class="text-zinc-400 font-bold uppercase">Total</span>
+                <span class="text-4xl font-black tracking-tight">${{ Number(precioSeleccionado).toLocaleString('es-CL') }}</span>
             </div>
 
-            <div class="mt-6 flex gap-3">
-                <button type="button" @click="cerrarModalPedido" class="w-full py-3 rounded-2xl bg-zinc-200 font-black">
-                    Cancelar
-                </button>
+            <button @click="irNombre" class="w-full mt-6 bg-white text-black py-6 rounded-2xl font-black text-xl uppercase tracking-widest active:scale-95">
+                Continuar
+            </button>
+        </div>
 
-                <button type="button" @click="confirmarPedido" :disabled="form.processing"
-                    class="w-full py-3 rounded-2xl bg-zinc-950 text-white font-black disabled:opacity-50">
-                    Confirmar
+        <div v-else class="p-6 animate-in slide-in-from-right-10">
+            <button @click="volver" class="mb-8 text-zinc-500 font-bold hover:text-white">← VOLVER</button>
+            <h2 class="text-4xl font-black mb-8 uppercase italic tracking-tighter">¿Quién pide?</h2>
+            <div class="bg-zinc-900 p-8 rounded-3xl">
+                <input v-model="form.nombre_cliente" 
+                    class="w-full bg-black border-2 border-zinc-800 rounded-2xl p-6 text-xl font-bold text-white outline-none focus:border-amber-500"
+                    placeholder="Escribe tu nombre..." />
+                
+                <button @click="confirmar" :disabled="form.processing"
+                    class="w-full mt-6 bg-amber-500 text-black py-6 rounded-2xl font-black text-xl uppercase tracking-widest disabled:opacity-50">
+                    {{ form.processing ? 'ENVIANDO...' : 'Pedir' }}
                 </button>
             </div>
         </div>
     </div>
+</div>
 </template>
+
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

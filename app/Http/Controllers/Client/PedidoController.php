@@ -6,115 +6,65 @@ use App\Http\Controllers\Controller;
 use App\Models\Pedido;
 use App\Models\Producto;
 use App\Models\Mesa;
-use App\Models\ProductoInsumo;
-use App\Models\Insumo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Throwable;
 
 class PedidoController extends Controller
 {
     public function store(Request $request)
     {
+        // 1. Validar los datos de entrada
         $data = $request->validate([
-            'tipo_entrega'   => ['required', 'in:presencial,delivery'],
-            'mesa_id'        => ['nullable', 'integer', 'exists:mesas,id'],
-            'nombre_cliente' => ['nullable', 'string', 'max:100'],
-
-            'productos'            => ['required', 'array', 'min:1'],
-            'productos.*.id'       => ['required', 'integer', 'exists:productos,id'],
-            'productos.*.cantidad' => ['required', 'integer', 'min:1'],
-            'productos.*.tamano'   => ['required', 'in:nano,mini,normal,max'],
+            'mesa_id'        => ['required', 'integer', 'exists:mesas,id'],
+            'nombre_cliente' => ['required', 'string', 'max:100'],
+            'producto_id'    => ['required', 'integer', 'exists:productos,id'],
+            'tamano'         => ['required', 'in:nano,mini,normal,max'],
         ]);
 
-        // 🔐 usuario autenticado (ya protegido por middleware)
-        $user = $request->user();
-
-        $pedidoActivo = Pedido::where('user_id', $user->id)
+        // 2. Verificar si la mesa ya tiene un pedido activo
+        $pedidoActivo = Pedido::where('mesa_id', $data['mesa_id'])
             ->whereIn('estado', ['pendiente', 'en_preparacion'])
             ->exists();
 
         if ($pedidoActivo) {
             return back()->withErrors([
-                'pedido' => 'Ya tienes un pedido activo.'
+                'pedido' => 'Esta mesa ya tiene un pedido activo'
             ]);
         }
 
-        try {
+        // 3. Procesar el pedido dentro de una transacción
+        DB::transaction(function () use ($data) {
+            
+            // Obtener el producto
+            $producto = Producto::findOrFail($data['producto_id']);
 
-            $pedido = DB::transaction(function () use ($data, $user) {
+            // Determinar dinámicamente el campo de precio a usar
+            // Ej: si tamano es 'nano', busca 'precio_nano' en el modelo Producto
+            $campoPrecio = 'precio_' . $data['tamano'];
+            $precioFinal = $producto->$campoPrecio;
 
-                $total = 0;
-
-                $pedido = Pedido::create([
-                    'user_id'        => $user->id,
-                    'tipo_pedido'    => $data['tipo_entrega'],
-                    'mesa_id'        => $data['mesa_id'],
-                    'nombre_cliente' => $data['nombre_cliente'],
-                    'estado'         => 'pendiente',
-                    'total'          => 0,
-                ]);
-
-                // mesa opcional
-                if (!empty($data['mesa_id'])) {
-                    Mesa::where('id', $data['mesa_id'])
-                        ->update(['estado' => 'ocupada']);
-                }
-
-                foreach ($data['productos'] as $item) {
-
-                    $producto = Producto::findOrFail($item['id']);
-
-                    $subtotal = $producto->precio * $item['cantidad'];
-                    $total += $subtotal;
-
-                    $pedido->detalles()->create([
-                        'producto_id'     => $producto->id,
-                        'cantidad'        => $item['cantidad'],
-                        'precio_unitario' => $producto->precio,
-                        'subtotal'        => $subtotal,
-                        'tamano'          => $item['tamano'],
-                    ]);
-
-                    $receta = ProductoInsumo::where('producto_id', $producto->id)
-                        ->where('tamano', $item['tamano'])
-                        ->get();
-
-                    if ($receta->isEmpty()) {
-                        throw new \Exception(
-                            "No hay receta para {$producto->nombre} ({$item['tamano']})"
-                        );
-                    }
-
-                    foreach ($receta as $r) {
-
-                        $insumo = Insumo::findOrFail($r->insumo_id);
-
-                        $cantidad = $r->cantidad * $item['cantidad'];
-
-                        if ($insumo->stock < $cantidad) {
-                            throw new \Exception(
-                                "Stock insuficiente de {$insumo->nombre}"
-                            );
-                        }
-
-                        $insumo->decrement('stock', $cantidad);
-                    }
-                }
-
-                $pedido->update([
-                    'total' => $total,
-                ]);
-
-                return $pedido;
-            });
-
-        } catch (Throwable $e) {
-
-            return back()->withErrors([
-                'pedido' => $e->getMessage()
+            // Crear el pedido principal
+            $pedido = Pedido::create([
+                'mesa_id'        => $data['mesa_id'],
+                'nombre_cliente' => $data['nombre_cliente'],
+                'estado'         => 'pendiente',
+                'total'          => $precioFinal, // Ahora garantizamos que no sea null
             ]);
-        }
+
+            // Crear el detalle del pedido
+            $pedido->detalles()->create([
+                'producto_id'     => $producto->id,
+                'cantidad'        => 1,
+                'precio_unitario' => $precioFinal,
+                'subtotal'        => $precioFinal,
+                'tamano'          => $data['tamano'],
+            ]);
+
+            // Marcar mesa como ocupada
+            Mesa::where('id', $data['mesa_id'])->update([
+                'estado' => 'ocupada'
+            ]);
+        });
 
         return back()->with('success', 'Pedido creado correctamente');
     }
