@@ -64,11 +64,14 @@ class MesaController extends Controller
     {
         $id = $request->id;
 
-        $validated = $request->validate([
-            'numero' => 'required|unique:mesas,numero,' . ($id ?? 'NULL'),
-            'activa' => 'required|integer|in:1,2'
-        ]);
+  $request->merge([
+    'numero' => strval($request->numero)
+]);
 
+$validated = $request->validate([
+    'numero' => 'required|string|max:20|unique:mesas,numero,' . ($id ?? 'NULL'),
+    'activa' => 'required|integer|in:1,2'
+]);
         if ($id) {
     // ✏️ ACTUALIZAR
     $mesa = Mesa::findOrFail($id);

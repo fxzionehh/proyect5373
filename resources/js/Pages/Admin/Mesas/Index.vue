@@ -176,7 +176,7 @@ class="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
             <label class="text-xs font-bold text-zinc-500">Número de mesa</label>
             <input
                 v-model="form.numero"
-                type="number"
+                type="text"
                 class="w-full border rounded-xl p-3 mt-1 focus:ring-2 focus:ring-amber-500"
                 placeholder="Ej: 5"
             />
