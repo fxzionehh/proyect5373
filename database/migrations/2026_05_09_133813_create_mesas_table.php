@@ -10,7 +10,7 @@ return new class extends Migration
 {
    Schema::create('mesas', function (Blueprint $table) {
     $table->id();
-    $table->string('numero', 20)->unique();
+    $table->integer('numero')->unique();
     $table->enum('estado', ['libre', 'ocupada', 'atendiendo'])->default('libre');
     $table->boolean('activa')->default(true);
     $table->string('qr_token')->unique()->nullable();

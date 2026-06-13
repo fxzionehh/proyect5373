@@ -16,7 +16,7 @@ const urlBase = window.location.origin
 const form = useForm({
     id: null,
     numero: '',
-    activa: 1
+    activa: true
 })
 
 const abrirCrear = () => {
@@ -176,7 +176,7 @@ class="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
             <label class="text-xs font-bold text-zinc-500">Número de mesa</label>
             <input
                 v-model="form.numero"
-                type="text"
+                type="number"
                 class="w-full border rounded-xl p-3 mt-1 focus:ring-2 focus:ring-amber-500"
                 placeholder="Ej: 5"
             />

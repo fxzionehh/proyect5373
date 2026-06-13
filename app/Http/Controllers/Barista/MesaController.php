@@ -70,7 +70,7 @@ class MesaController extends Controller
 
 $validated = $request->validate([
     'numero' => 'required|string|max:20|unique:mesas,numero,' . ($id ?? 'NULL'),
-    'activa' => 'required|integer|in:1,2'
+    'activa' => 'required|boolean'
 ]);
         if ($id) {
     // ✏️ ACTUALIZAR
