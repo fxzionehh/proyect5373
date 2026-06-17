@@ -72,14 +72,14 @@ const can = (perm) => {
             </div>
         </div>
 
-        <Link v-if="can('ver reportes')" href="/dashboard/reportes"
+        <Link v-if="can('ver reporte')" href="/dashboard/reportes"
             class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-2 md:px-4 py-2 rounded-lg transition"
             :class="page.url.startsWith('/dashboard/reportes') ? 'bg-zinc-900 text-white' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
             <i class="fa-solid fa-chart-bar text-lg md:text-sm"></i>
             <span class="text-[10px] md:text-sm font-semibold hidden md:block">Reportes</span>
         </Link>
 
-        <Link v-if="can('ver mesas')" href="/dashboard/mesas"
+        <Link v-if="can('ver mesa')" href="/dashboard/mesas"
             class="flex flex-col md:flex-row items-center gap-1 md:gap-3 px-2 md:px-4 py-2 rounded-lg transition"
             :class="page.url.startsWith('/dashboard/mesas') ? 'bg-zinc-900 text-white' : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'">
             <i class="fa-solid fa-table text-lg md:text-sm"></i>

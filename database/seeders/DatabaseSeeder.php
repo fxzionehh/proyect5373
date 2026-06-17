@@ -104,18 +104,15 @@ $editarRol = Permission::create(['nombre' => 'editar rol']);
 $actualizarRol = Permission::create(['nombre' => 'actualizar rol']);
 $eliminarRol = Permission::create(['nombre' => 'eliminar rol']);
 
-$verMesas = Permission::create(['nombre' => 'ver mesas']);
-
-$verReportes = Permission::create(['nombre' => 'ver reportes']);
-
-
+$verMesa = Permission::create(['nombre' => 'ver mesa']);
+$crearMesa = Permission::create(['nombre' => 'crear mesa']);
+$actualizarMesa = Permission::create(['nombre' => 'actualizar mesa']);
+$eliminarMesa = Permission::create(['nombre' => 'eliminar mesa']);
 
 $adminRole->permissions()->sync([
-
     $verPreparacion->id,
     $editarPreparacion->id,
 
-   
     $verProducto->id,
     $crearProducto->id,
     $editarProducto->id,
@@ -134,8 +131,6 @@ $adminRole->permissions()->sync([
     $actualizarRol->id,
     $eliminarRol->id,
 
-
-
     $verPedido->id,
     $crearPedido->id,
     $editarPedido->id,
@@ -144,15 +139,11 @@ $adminRole->permissions()->sync([
 
     $verMesa->id,
     $crearMesa->id,
-    $eliminarMesa->id,
     $actualizarMesa->id,
     $eliminarMesa->id,
 
 
-
-    $verReportes->id,
 ]);
-
 $baristaRole->permissions()->sync([
     $verPreparacion->id,
 ]);

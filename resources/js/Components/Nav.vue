@@ -1,6 +1,6 @@
 <script setup>
 import { Link, usePage, router } from '@inertiajs/vue3'
-// Importación corregida con la ruta exacta y la extensión .jpg correcta
+
 import logoUrl from '../../img/logos/logo_steamcup.jpg'
 
 const page = usePage()
