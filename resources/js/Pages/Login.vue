@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue' // Importa ref
 import { useForm } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
 
@@ -6,6 +7,7 @@ import Toast from 'primevue/toast'
 import { useToast } from "primevue/usetoast"
 
 const toast = useToast()
+const showPassword = ref(false) // Estado para controlar la visibilidad
 
 const form = useForm({
   email: '',
@@ -40,12 +42,10 @@ const submit = () => {
 <template>
   <Toast />
 
- 
   <div class="min-h-screen overflow-hidden flex flex-col bg-gradient-to-br from-gray-100 to-gray-200">
 
     <navSito />
 
-   
     <div class="flex flex-1 items-center justify-center px-4">
 
       <form
@@ -57,9 +57,9 @@ const submit = () => {
           Iniciar Sesión
         </h2>
 
+        <!-- Campo Correo -->
         <div class="mb-4">
           <label class="block mb-1 font-medium text-gray-700">Correo</label>
-
           <input
             v-model="form.email"
             type="email"
@@ -67,34 +67,38 @@ const submit = () => {
                    focus:border-black focus:ring-2 focus:ring-black/10
                    outline-none transition"
             :class="{ 'border-red-500': form.errors.email }"
-            required
           />
-
           <p v-if="form.errors.email" class="text-red-500 text-xs mt-1">
             {{ form.errors.email }}
           </p>
         </div>
 
-      
+        <!-- Campo Contraseña -->
         <div class="mb-6">
           <label class="block mb-1 font-medium text-gray-700">Contraseña</label>
-
-          <input
-            v-model="form.password"
-            type="password"
-            class="w-full px-4 py-2 rounded-lg border border-gray-200
-                   focus:border-black focus:ring-2 focus:ring-black/10
-                   outline-none transition"
-            :class="{ 'border-red-500': form.errors.password }"
-            required
-          />
-
+          <div class="relative">
+            <input
+              v-model="form.password"
+              :type="showPassword ? 'text' : 'password'"
+              class="w-full px-4 py-2 rounded-lg border border-gray-200
+                     focus:border-black focus:ring-2 focus:ring-black/10
+                     outline-none transition pr-12"
+              :class="{ 'border-red-500': form.errors.password }"
+            />
+            <!-- Botón de Mostrar/Ocultar -->
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black font-semibold text-xs"
+            >
+              {{ showPassword ? 'Ocultar' : 'Ver' }}
+            </button>
+          </div>
           <p v-if="form.errors.password" class="text-red-500 text-xs mt-1">
             {{ form.errors.password }}
           </p>
         </div>
 
-       
         <button
           type="submit"
           class="w-full bg-black hover:bg-gray-800 text-white
@@ -106,7 +110,6 @@ const submit = () => {
         </button>
 
       </form>
-
     </div>
   </div>
 </template>

@@ -17,6 +17,7 @@ const insumoEditando = ref(null)
 
 // El formulario de insumos solo necesita Nombre y Stock (sin precio)
 const form = useForm({
+    id:null,
     nombre: '',
     stock: ''
 })
@@ -30,6 +31,7 @@ const abrirEditar = (insumo) => {
     editando.value = true
     insumoEditando.value = insumo
 
+    form.id = insumo.id
     form.nombre = insumo.nombre
     form.stock = insumo.stock
 
@@ -161,20 +163,7 @@ const limpiar = () => {
                                 class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none" />
                         </div>
 
-                        <!-- CARD PREVIEW -->
-                        <div class="bg-zinc-50 border rounded-xl p-4">
-                            <p class="text-xs text-zinc-500 uppercase mb-2">Vista previa</p>
-
-                            <div class="flex justify-between items-center">
-                                <span class="font-semibold text-zinc-800">
-                                    {{ form.nombre || 'Nombre insumo' }}
-                                </span>
-
-                                <span class="text-sm font-bold text-amber-600">
-                                    Stock: {{ form.stock || 0 }}
-                                </span>
-                            </div>
-                        </div>
+                 
 
                         <!-- BOTONES -->
                         <div class="flex justify-end gap-2 pt-2">

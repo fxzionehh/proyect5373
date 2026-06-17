@@ -9,7 +9,7 @@ class Mesa extends Model
 {
   use HasFactory;
 
-    protected $fillable = ['numero', 'estado', 'activa', 'qr_token'];
+    protected $fillable = ['numero', 'estado', 'qr_token'];
 
    
     public function getRouteKeyName()

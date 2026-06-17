@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
+use App\Models\Permission;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Mesa;
@@ -76,9 +76,85 @@ class DatabaseSeeder extends Seeder
             'unidad' => 'unidad',
         ]);
 
+       $verPreparacion = Permission::create(['nombre' => 'ver preparacion']);
+$editarPreparacion = Permission::create(['nombre' => 'editar preparacion']);
+
+$verPedido = Permission::create(['nombre' => 'ver pedido']);
+$crearPedido = Permission::create(['nombre' => 'crear pedido']);
+$editarPedido = Permission::create(['nombre' => 'editar pedido']);
+$actualizarPedido = Permission::create(['nombre' => 'actualizar pedido']);
+$eliminarPedido = Permission::create(['nombre' => 'eliminar pedido']);
 
 
-     
-       
+$verProducto = Permission::create(['nombre' => 'ver producto']);
+$crearProducto = Permission::create(['nombre' => 'crear producto']);
+$editarProducto = Permission::create(['nombre' => 'editar producto']);
+$actualizarProducto = Permission::create(['nombre' => 'actualizar producto']);
+$eliminarProducto = Permission::create(['nombre' => 'eliminar producto']);
+
+$verInsumo = Permission::create(['nombre' => 'ver insumo']);
+$crearInsumo = Permission::create(['nombre' => 'crear insumo']);
+$editarInsumo = Permission::create(['nombre' => 'editar insumo']);
+$actualizarInsumo = Permission::create(['nombre' => 'actualizar insumo']);
+$eliminarInsumo = Permission::create(['nombre' => 'eliminar insumo']);
+
+$verRol = Permission::create(['nombre' => 'ver rol']);
+$crearRol = Permission::create(['nombre' => 'crear rol']);
+$editarRol = Permission::create(['nombre' => 'editar rol']);
+$actualizarRol = Permission::create(['nombre' => 'actualizar rol']);
+$eliminarRol = Permission::create(['nombre' => 'eliminar rol']);
+
+$verMesas = Permission::create(['nombre' => 'ver mesas']);
+
+$verReportes = Permission::create(['nombre' => 'ver reportes']);
+
+
+
+$adminRole->permissions()->sync([
+
+    $verPreparacion->id,
+    $editarPreparacion->id,
+
+   
+    $verProducto->id,
+    $crearProducto->id,
+    $editarProducto->id,
+    $actualizarProducto->id,
+    $eliminarProducto->id,
+
+    $verInsumo->id,
+    $crearInsumo->id,
+    $editarInsumo->id,
+    $actualizarInsumo->id,
+    $eliminarInsumo->id,
+
+    $verRol->id,
+    $crearRol->id,
+    $editarRol->id,
+    $actualizarRol->id,
+    $eliminarRol->id,
+
+
+
+    $verPedido->id,
+    $crearPedido->id,
+    $editarPedido->id,
+    $actualizarPedido->id,
+    $eliminarPedido->id,
+
+    $verMesa->id,
+    $crearMesa->id,
+    $eliminarMesa->id,
+    $actualizarMesa->id,
+    $eliminarMesa->id,
+
+
+
+    $verReportes->id,
+]);
+
+$baristaRole->permissions()->sync([
+    $verPreparacion->id,
+]);
     }
 }

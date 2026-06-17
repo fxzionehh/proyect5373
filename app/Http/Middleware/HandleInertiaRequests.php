@@ -14,7 +14,7 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
-   public function share(Request $request): array
+ public function share(Request $request): array
 {
     return [
         ...parent::share($request),
@@ -23,6 +23,10 @@ class HandleInertiaRequests extends Middleware
             'user' => $request->user()
                 ? $request->user()->load('role')
                 : null,
+
+          'permissions' => $request->user() && $request->user()->role 
+    ? $request->user()->role->permissions->pluck('nombre')->toArray() 
+    : [],
         ],
     ];
 }

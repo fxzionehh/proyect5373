@@ -12,14 +12,13 @@ const logout = () => {
 
 <template>
   <div>
-    <nav
-      class="flex  justify-between items-center px-10  py-3 sticky top-0 z-50 bg-zinc-950  shadow-2xl">
+    <nav class="flex  justify-between items-center px-10  py-3 sticky top-0 z-50 bg-zinc-950  shadow-2xl">
 
       <div class="flex items-center gap-3 font-bold">
-        <Link href="/">
+        <!--- <Link href="/">
           <img :src="logoUrl" alt="SteamCup Logo" class="h-8 w-auto object-contain rounded" />
-        </Link>
-
+        </Link>--->
+        <!---
         <div class="flex flex-col">
           <h1 class="text-sm font-black  uppercase text-white leading-none">
             SteamCup
@@ -28,7 +27,11 @@ const logout = () => {
           <p class="text-[9px] text-zinc-400 mt-1 tracking-wider uppercase">
             Cafetería
           </p>
-        </div>
+        </div>--->
+        <h1 class="text-sm font-black  uppercase text-white leading-none">
+          Gestión de pedidos
+        </h1>
+
 
       </div>
 
@@ -50,22 +53,7 @@ const logout = () => {
 
         </div>
 
-       <div v-else>
-
-    <Link
-        href="/login"
-        class="flex items-center gap-2 text-xs font-semibold text-white bg-zinc-800 hover:bg-zinc-700 px-3 py-1.5 rounded-lg transition-all duration-200"
-    >
-
-        <i class="fa-solid fa-user"></i>
-
-        <span>
-            Login
-        </span>
-
-    </Link>
-
-</div>
+     
 
       </div>
     </nav>

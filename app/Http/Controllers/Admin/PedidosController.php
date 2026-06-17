@@ -13,6 +13,7 @@ use Inertia\Inertia;
 
 class PedidosController extends Controller
 {
+    // 📋 Lista de pedidos
     public function index()
     {
         return Inertia::render('Admin/Pedidos/Index', [
@@ -22,50 +23,59 @@ class PedidosController extends Controller
         ]);
     }
 
-   public function store(Request $request)
+    // 🔎 Edit (API simple)
+    public function edit($id)
+    {
+        $pedido = Pedido::with('detalles.producto')->find($id);
+
+        if (!$pedido) {
+            return response()->json([
+                'error' => 'No encontrado',
+            ], 404);
+        }
+
+        return response()->json($pedido);
+    }
+
+ public function store(Request $request)
 {
-   
     $data = $request->validate([
         'mesa_id' => ['required', 'integer'],
         'nombre_cliente' => ['required', 'string'],
         'estado' => ['required', 'string'],
         'tipo_pedido' => ['required', 'string'],
-        'productos' => ['required', 'array', 'min:1'],
-        'productos.*.id' => ['required', 'exists:productos,id'],
-        'productos.*.cantidad' => ['required', 'integer', 'min:1'],
+        'producto_id' => ['required', 'exists:productos,id'],
     ]);
- //dd($data);
+
     return DB::transaction(function () use ($data) {
-        // 1. Crear el Pedido
+
+        $producto = Producto::findOrFail($data['producto_id']);
+
         $pedido = Pedido::create([
             'mesa_id' => $data['mesa_id'],
             'nombre_cliente' => $data['nombre_cliente'],
-            'estado' => $data['estado'], // Corregido aquí
+            'estado' => $data['estado'],
             'tipo_pedido' => $data['tipo_pedido'],
-            'total' => 0, 
+            'total' => $producto->precio_normal,
         ]);
 
-        $totalPedido = 0;
-
-        // 2. Crear los Detalles
-        foreach ($data['productos'] as $item) {
-            $producto = Producto::findOrFail($item['id']);
-            $subtotal = $producto->precio * $item['cantidad'];
-            $totalPedido += $subtotal;
-
-            DetallePedido::create([
-                'pedido_id' => $pedido->id,
-                'producto_id' => $producto->id,
-                'cantidad' => $item['cantidad'],
-                'precio_unitario' => $producto->precio,
-                'subtotal' => $subtotal,
-            ]);
-        }
-
-        // 3. Guardar el total calculado
-        $pedido->update(['total' => $totalPedido]);
+        DetallePedido::create([
+            'pedido_id' => $pedido->id,
+            'producto_id' => $producto->id,
+            'cantidad' => 1,
+            'precio_unitario' => $producto->precio_normal,
+            'subtotal' => $producto->precio_normal,
+        ]);
 
         return back();
     });
 }
+    // 🗑️ Eliminar pedido
+    public function destroy(Pedido $pedido)
+    {
+        $pedido->detalles()->delete();
+        $pedido->delete();
+
+        return back();
+    }
 }

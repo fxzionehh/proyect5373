@@ -70,13 +70,12 @@ class MesaController extends Controller
 
 $validated = $request->validate([
     'numero' => 'required|string|max:20|unique:mesas,numero,' . ($id ?? 'NULL'),
-    'activa' => 'required|boolean'
 ]);
         if ($id) {
     // ✏️ ACTUALIZAR
     $mesa = Mesa::findOrFail($id);
     $mesa->numero = $validated['numero'];
-    $mesa->activa = $validated['activa'];
+
 
     // 🔐 ASEGURAR TOKEN SI NO EXISTE
     if (!$mesa->qr_token) {
@@ -88,7 +87,6 @@ $validated = $request->validate([
     // ➕ CREAR
     $mesa = new Mesa();
     $mesa->numero = $validated['numero'];
-    $mesa->activa = $validated['activa'];
     $mesa->qr_token = Str::random(20);
     $mesa->save();
 }

@@ -5,11 +5,13 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-// --- PRIMEVUE 4 ---
+// --- IMPORTAR ZIGGY ---
+import { ZiggyVue } from 'ziggy-js'; 
+
 import PrimeVue from 'primevue/config';
 import ToastService from 'primevue/toastservice';
-import Aura from '@primevue/themes/aura'; // Ahora sí funcionará
-import 'primeicons/primeicons.css'; // Los iconos sí se importan aparte
+import Aura from '@primevue/themes/aura';
+import 'primeicons/primeicons.css';
 
 createInertiaApp({
     resolve: (name) =>
@@ -20,13 +22,13 @@ createInertiaApp({
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
             .use(plugin)
+            .use(ZiggyVue) // <--- AGREGAR ESTA LÍNEA
             .use(PrimeVue, {
-                // Configuración de tema para v4
                 theme: {
                     preset: Aura,
                     options: {
                         prefix: 'p',
-                        darkModeSelector: '.my-app-dark', // O 'system'
+                        darkModeSelector: '.my-app-dark',
                         cssLayer: false
                     }
                 }

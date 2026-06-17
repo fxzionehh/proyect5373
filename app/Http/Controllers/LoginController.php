@@ -9,10 +9,27 @@ use Inertia\Inertia;
 
 class LoginController extends Controller{
   
-    public function create(){
-        return Inertia::render('Login');
+  public function create()
+{
+    if (Auth::check()) {
+
+        $user = Auth::user();
+
+        if ($user->role?->nombre === 'administrador') {
+            return redirect('/dashboard/pedidos');
+        }
+
+        if ($user->role?->nombre === 'barista') {
+            return redirect('/dashboard/preparacion');
+        }
+
+        if ($user->role?->nombre === 'cliente') {
+            return redirect('/client');
+        }
     }
 
+    return Inertia::render('Login');
+}
 
  public function store(Request $request)
 {
@@ -34,7 +51,7 @@ class LoginController extends Controller{
 
        
         if ($user->role?->nombre === 'barista') {
-            return redirect('/preparacion');
+            return redirect('/dashboard/preparacion');
         }
 
        if ($user->role?->nombre === 'cliente') {
@@ -43,7 +60,7 @@ class LoginController extends Controller{
 
         Auth::logout();
 
-        return redirect('/login')
+        return redirect('/')
             ->withErrors([
                 'email' => 'no tienes permisos',
             ]);
@@ -63,6 +80,6 @@ class LoginController extends Controller{
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        return redirect('/');
     }
 }
