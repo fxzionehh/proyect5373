@@ -18,22 +18,8 @@ const modalPedido = ref(null)
 
 
 
-const actualizarHora = () => {
-    const now = new Date()
-
-    horaActual.value = now.toLocaleTimeString('es-CL', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    })
-}
-
 let interval = null
 
-onMounted(() => {
-    actualizarHora()
-    interval = setInterval(actualizarHora, 1000)
-})
 
 onUnmounted(() => {
     clearInterval(interval)

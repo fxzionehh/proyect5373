@@ -110,7 +110,7 @@ Route::middleware(['auth'])->group(function () {
     */
 
     Route::get('/dashboard/reportes', [ReporteController::class, 'index'])
-        ->middleware('permission:ver reportes');
+        ->middleware('permission:ver reporte');
 
     /*
     |--------------------------------------------------------------------------

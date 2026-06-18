@@ -109,6 +109,8 @@ $crearMesa = Permission::create(['nombre' => 'crear mesa']);
 $actualizarMesa = Permission::create(['nombre' => 'actualizar mesa']);
 $eliminarMesa = Permission::create(['nombre' => 'eliminar mesa']);
 
+$verReporte = Permission::create(['nombre' => 'ver reporte']);
+
 $adminRole->permissions()->sync([
     $verPreparacion->id,
     $editarPreparacion->id,
@@ -142,6 +144,7 @@ $adminRole->permissions()->sync([
     $actualizarMesa->id,
     $eliminarMesa->id,
 
+    $verReporte->id,
 
 ]);
 $baristaRole->permissions()->sync([
