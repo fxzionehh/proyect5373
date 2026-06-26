@@ -1,20 +1,16 @@
+
+
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useForm, router, usePage } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
-defineProps({
+const page = usePage()
+
+const props = defineProps({
     productos: Array
 })
-
-
-const page = usePage()
-const permissions = computed(() => page.props.auth.permissions || [])
-const can = (perm) => {
-    //if (isAdmin.value) return true
-    return permissions.value.includes(perm)
-}
 
 const modalAbierto = ref(false)
 const editando = ref(false)
@@ -27,215 +23,286 @@ const form = useForm({
     precio_mini: '',
     precio_normal: '',
     precio_max: '',
-    stock: '',
+    stock: ''
 })
+
+const can = (permiso) => {
+    return page.props.auth?.permissions?.includes(permiso)
+}
 
 const abrirCrear = () => {
     limpiar()
     modalAbierto.value = true
 }
 
-const abrirEditar = (p) => {
+const abrirEditar = (producto) => {
     editando.value = true
-    productoEditando.value = p
-    form.nombre = p.nombre
-    form.precio_nano = p.precio_nano
-    form.precio_mini = p.precio_mini
-    form.precio_normal = p.precio_normal
-    form.precio_max = p.precio_max
-    form.stock = p.stock
+    productoEditando.value = producto
+
+    form.id = producto.id
+    form.nombre = producto.nombre
+    form.precio_nano = producto.precio_nano
+    form.precio_mini = producto.precio_mini
+    form.precio_normal = producto.precio_normal
+    form.precio_max = producto.precio_max
+    form.stock = producto.stock
+
     modalAbierto.value = true
 }
 
-const cerrarModal = () => { modalAbierto.value = false; limpiar(); }
+const cerrarModal = () => {
+    modalAbierto.value = false
+    limpiar()
+}
 
 const guardar = () => {
     if (editando.value) {
-        form.id = productoEditando.value.id
+        form.put(`/dashboard/productos/${productoEditando.value.id}`, {
+            onSuccess: cerrarModal
+        })
+    } else {
+        form.post('/dashboard/productos', {
+            onSuccess: cerrarModal
+        })
     }
-
-    form.post('/dashboard/productos', {
-        onSuccess: cerrarModal
-    })
 }
 
-const eliminar = (p) => {
-    if (confirm(`¿Eliminar ${p.nombre}?`)) router.delete(`/dashboard/productos/${p.id}`)
+const eliminar = (producto) => {
+    if (confirm(`¿Eliminar el producto ${producto.nombre}?`)) {
+        router.delete(`/dashboard/productos/${producto.id}`)
+    }
 }
 
-const limpiar = () => { editando.value = false; productoEditando.value = null; form.reset(); form.clearErrors(); }
+const limpiar = () => {
+    editando.value = false
+    productoEditando.value = null
+    form.reset()
+    form.clearErrors()
+}
 </script>
 
 <template>
     <navSito />
+
     <div class="min-h-screen bg-zinc-100/90 md:flex">
         <AppLayout />
-        <main class="flex-1 p-4 md:p-8">
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+
+        <main class="flex-1 p-8 w-full overflow-hidden">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-black text-zinc-900">Productos</h1>
-                <button @click="abrirCrear"
-                    class="w-full sm:w-auto bg-amber-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-amber-600 transition">
-                    <i class="fa-solid fa-plus text-[10px]"></i> <span>Crear producto</span>
+
+                <button
+                    @click="abrirCrear"
+                    class="flex items-center gap-2 bg-amber-500 text-white px-4 py-1.5 rounded-lg font-semibold hover:bg-amber-600 transition-all shadow-sm text-sm"
+                >
+                    <i class="fa-solid fa-plus text-[10px]"></i>
+                    <span>Crear producto</span>
                 </button>
             </div>
 
-            <section class="bg-white rounded-xl overflow-hidden border shadow-sm">
+            <!-- Tabla -->
+            <section class="bg-white rounded-xl border border-gray-200 shadow-sm w-full overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[850px] text-sm">
-                        <thead class="bg-zinc-900 text-white">
+                    <table class="w-full text-left border-collapse min-w-[950px]">
+                        <thead class="bg-zinc-900 text-white text-sm uppercase tracking-wide">
                             <tr>
-                                <th class="px-4 py-4 text-left">Producto</th>
-                                <th class="px-4 py-4 text-center">Nano</th>
-                                <th class="px-4 py-4 text-center">Mini</th>
-                                <th class="px-4 py-4 text-center">Normal</th>
-                                <th class="px-4 py-4 text-center">Max</th>
-                                <th class="px-4 py-4 text-center">Stock</th>
-                                <th class="px-4 py-4 text-right">Acciones</th>
+                                <th class="px-6 py-4">Producto</th>
+                                <th class="px-6 py-4 text-center">Nano</th>
+                                <th class="px-6 py-4 text-center">Mini</th>
+                                <th class="px-6 py-4 text-center">Normal</th>
+                                <th class="px-6 py-4 text-center">Max</th>
+                                <th class="px-6 py-4 text-center">Stock</th>
+                                <th class="px-6 py-4 text-right">Acciones</th>
                             </tr>
                         </thead>
 
-                        <tbody class="divide-y divide-zinc-100">
-                            <tr v-for="p in productos" :key="p.id" class="hover:bg-zinc-50 transition">
-                                <td class="px-4 py-4 font-medium whitespace-nowrap">
+                        <tbody class="divide-y divide-gray-100">
+                            <tr
+                                v-for="p in productos"
+                                :key="p.id"
+                                class="hover:bg-gray-50 transition"
+                            >
+                                <td class="px-6 py-4 font-medium text-zinc-800 whitespace-nowrap">
                                     {{ p.nombre }}
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <td class="px-6 py-4 text-center text-gray-700 whitespace-nowrap">
                                     ${{ p.precio_nano }}
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <td class="px-6 py-4 text-center text-gray-700 whitespace-nowrap">
                                     ${{ p.precio_mini }}
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <td class="px-6 py-4 text-center text-gray-700 whitespace-nowrap">
                                     ${{ p.precio_normal }}
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <td class="px-6 py-4 text-center text-gray-700 whitespace-nowrap">
                                     ${{ p.precio_max }}
                                 </td>
 
-                                <td class="px-4 py-4 text-center whitespace-nowrap">
+                                <td class="px-6 py-4 text-center text-gray-700 whitespace-nowrap">
                                     {{ p.stock }}
                                 </td>
 
-                                <td class="px-4 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4">
                                     <div class="flex justify-end gap-2">
-                                        <button v-if="can('editar producto')" @click="abrirEditar(p)"
-                                            class="px-3 py-2 rounded-lg bg-sky-500 text-white hover:bg-sky-600">
-                                            Editar
+                                        <button
+                                            v-if="can('editar producto')"
+                                            @click="abrirEditar(p)"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-600 transition"
+                                        >
+                                            <i class="fa-solid fa-pen text-[10px]"></i>
+                                            <span>Editar</span>
                                         </button>
 
-                                        <button v-if="can('eliminar producto')" @click="eliminar(p)"
-                                            class="px-3 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600">
-                                            Eliminar
+                                        <button
+                                            v-if="can('eliminar producto')"
+                                            @click="eliminar(p)"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition"
+                                        >
+                                            <i class="fa-solid fa-trash text-[10px]"></i>
+                                            <span>Eliminar</span>
                                         </button>
                                     </div>
+                                </td>
+                            </tr>
+
+                            <tr v-if="!productos.length">
+                                <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                                    No hay productos registrados.
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </section>
-       
-        </main>
-    </div>
 
-
-         <div v-if="modalAbierto"
-                class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-
-                <div class="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden">
-
-                    <!-- HEADER -->
-                    <div class="bg-zinc-900 text-white px-4 py-3 flex justify-between items-center">
-                        <h2 class="font-bold text-sm uppercase tracking-wide">
+            <!-- Modal -->
+            <div
+                v-if="modalAbierto"
+                class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            >
+                <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
+                    <!-- Header modal -->
+                    <div class="bg-zinc-900 text-white px-5 py-4 flex justify-between items-center">
+                        <h2 class="font-bold text-lg">
                             {{ editando ? 'Editar producto' : 'Nuevo producto' }}
                         </h2>
 
-                        <button @click="cerrarModal" class="text-white/70 hover:text-white text-sm">
+                        <button @click="cerrarModal" class="text-white/70 hover:text-white">
                             ✕
                         </button>
                     </div>
 
-                    <!-- FORM -->
-                    <form @submit.prevent="guardar" class="p-4 space-y-3">
-
+                    <!-- Form -->
+                    <form @submit.prevent="guardar" class="p-6 space-y-5">
                         <!-- Nombre -->
                         <div>
-                            <label class="text-[10px] font-bold text-zinc-500 uppercase">
-                                Nombre
-                            </label>
-
-                            <input v-model="form.nombre" type="text"
-                                class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" />
+                            <label class="text-xs font-bold text-zinc-500 uppercase">Nombre</label>
+                            <input
+                                v-model="form.nombre"
+                                type="text"
+                                placeholder="Ej: Cappuccino"
+                                class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                            <div v-if="form.errors.nombre" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.nombre }}
+                            </div>
                         </div>
 
                         <!-- Precios -->
-                        <div class="grid grid-cols-2 gap-3">
-
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-[10px] font-bold text-zinc-500 uppercase">
-                                    Nano
-                                </label>
-                                <input v-model="form.precio_nano" type="number"
-                                    class="w-full mt-1 px-3 py-2 text-sm border rounded-lg" />
+                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Nano</label>
+                                <input
+                                    v-model="form.precio_nano"
+                                    type="number"
+                                    placeholder="0"
+                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                                />
+                                <div v-if="form.errors.precio_nano" class="text-red-500 text-sm mt-1">
+                                    {{ form.errors.precio_nano }}
+                                </div>
                             </div>
 
                             <div>
-                                <label class="text-[10px] font-bold text-zinc-500 uppercase">
-                                    Mini
-                                </label>
-                                <input v-model="form.precio_mini" type="number"
-                                    class="w-full mt-1 px-3 py-2 text-sm border rounded-lg" />
+                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Mini</label>
+                                <input
+                                    v-model="form.precio_mini"
+                                    type="number"
+                                    placeholder="0"
+                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                                />
+                                <div v-if="form.errors.precio_mini" class="text-red-500 text-sm mt-1">
+                                    {{ form.errors.precio_mini }}
+                                </div>
                             </div>
 
                             <div>
-                                <label class="text-[10px] font-bold text-zinc-500 uppercase">
-                                    Normal
-                                </label>
-                                <input v-model="form.precio_normal" type="number"
-                                    class="w-full mt-1 px-3 py-2 text-sm border rounded-lg" />
+                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Normal</label>
+                                <input
+                                    v-model="form.precio_normal"
+                                    type="number"
+                                    placeholder="0"
+                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                                />
+                                <div v-if="form.errors.precio_normal" class="text-red-500 text-sm mt-1">
+                                    {{ form.errors.precio_normal }}
+                                </div>
                             </div>
 
                             <div>
-                                <label class="text-[10px] font-bold text-zinc-500 uppercase">
-                                    Max
-                                </label>
-                                <input v-model="form.precio_max" type="number"
-                                    class="w-full mt-1 px-3 py-2 text-sm border rounded-lg" />
+                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Max</label>
+                                <input
+                                    v-model="form.precio_max"
+                                    type="number"
+                                    placeholder="0"
+                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                                />
+                                <div v-if="form.errors.precio_max" class="text-red-500 text-sm mt-1">
+                                    {{ form.errors.precio_max }}
+                                </div>
                             </div>
-
                         </div>
 
                         <!-- Stock -->
                         <div>
-                            <label class="text-[10px] font-bold text-zinc-500 uppercase">
-                                Stock
-                            </label>
-
-                            <input v-model="form.stock" type="number"
-                                class="w-full mt-1 px-3 py-2 text-sm border rounded-lg" />
+                            <label class="text-xs font-bold text-zinc-500 uppercase">Stock</label>
+                            <input
+                                v-model="form.stock"
+                                type="number"
+                                placeholder="0"
+                                class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                            />
+                            <div v-if="form.errors.stock" class="text-red-500 text-sm mt-1">
+                                {{ form.errors.stock }}
+                            </div>
                         </div>
 
-                        <!-- FOOTER -->
-                        <div class="flex justify-end gap-2 pt-2 border-t mt-3">
-
-                            <button type="button" @click="cerrarModal"
-                                class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100">
+                        <!-- Footer -->
+                        <div class="flex justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                @click="cerrarModal"
+                                class="px-4 py-2 border rounded-xl text-sm hover:bg-gray-50"
+                            >
                                 Cancelar
                             </button>
 
-                            <button type="submit"
-                                class="px-4 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-semibold">
-                                Guardar
+                            <button
+                                type="submit"
+                                :disabled="form.processing"
+                                class="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-50"
+                            >
+                                {{ form.processing ? 'Guardando...' : 'Guardar' }}
                             </button>
-
                         </div>
-
                     </form>
-
                 </div>
             </div>
+        </main>
+    </div>
 </template>

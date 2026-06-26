@@ -12,7 +12,7 @@ use App\Http\Controllers\Admin\InsumoController;
 use App\Http\Controllers\Barista\PrepararPedidoController;
 use App\Http\Controllers\Barista\MesaController;
 use App\Http\Controllers\Client\PedidoController;
-
+use App\Http\Controllers\Admin\UsuarioController;
 //Route::get('/', [IndexController::class, 'index'])->name('inicio');
 
 Route::get('/', [LoginController::class, 'create'])->name('login');
@@ -35,6 +35,14 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
         ->middleware('permission:eliminar rol');
+
+    Route::get('/dashboard/usuarios', [UsuarioController::class, 'index']);
+
+    Route::get('/usuarios/edit/{id}', [UsuarioController::class, 'edit']);
+
+    Route::post('/dashboard/usuarios', [UsuarioController::class, 'store']);
+
+    Route::delete('/dashboard/usuarios/{usuario}', [UsuarioController::class, 'destroy']);
 
 
     Route::get('/dashboard/productos', [ProductoController::class, 'index'])
@@ -130,3 +138,5 @@ Route::post('/pedidos', [PedidoController::class, 'store'])
 
 Route::get('/mesa/{mesa}', [MesaController::class, 'show'])
     ->name('mesas.show');
+
+Route::get('/pedidos/{pedido}', [PedidoController::class, 'show']);

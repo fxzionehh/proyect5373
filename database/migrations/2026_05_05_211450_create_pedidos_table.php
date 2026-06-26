@@ -17,7 +17,7 @@ return new class extends Migration
     $table->string('nombre_cliente')->nullable();
     $table->string('telefono')->nullable();
     $table->enum('tipo_pedido', ['presencial', 'delivery'])->default('presencial');
-    $table->enum('estado', ['pendiente', 'pagado', 'en_preparacion', 'listo'])->default('pendiente');
+    $table->enum('estado', ['pendiente', 'entregado', 'en_preparacion', 'listo'])->default('pendiente');
     $table->decimal('total', 10, 2);
     $table->timestamps();
 });

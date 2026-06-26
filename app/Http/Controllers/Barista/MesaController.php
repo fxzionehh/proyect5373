@@ -13,14 +13,16 @@ use Inertia\Inertia;
 class MesaController extends Controller
 {
     // 📋 Lista de mesas
-    public function index() {
+    public function index()
+    {
         return Inertia::render('Admin/Mesas/Index', [
             'mesas' => Mesa::orderBy('numero')->get()
         ]);
     }
 
     // 🔎 Edit (API simple)
-    public function edit($id) {
+    public function edit($id)
+    {
         $mesa = Mesa::find($id);
 
         if (!$mesa) {
@@ -35,7 +37,6 @@ class MesaController extends Controller
     // 🍽️ Entrada cliente a mesa (PROTEGIDA POR QR)
     public function show($id, Request $request)
     {
-       
         $mesa = Mesa::findOrFail($id);
 
         // 🔐 VALIDACIÓN QR
@@ -43,19 +44,24 @@ class MesaController extends Controller
             abort(403, 'Acceso no autorizado a la mesa');
         }
 
-        $productos = Producto::all();
+        $productos = Producto::orderBy('nombre')->get();
 
+        /**
+         * IMPORTANTE:
+         * Si quieres que el cliente siga viendo el resumen cuando el pedido esté LISTO,
+         * entonces 'listo' también debe contarse como pedido actual.
+         */
         $pedidoActual = Pedido::with('detalles.producto')
             ->where('mesa_id', $mesa->id)
-            ->whereIn('estado', ['pendiente', 'en_preparacion'])
+            ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
             ->latest()
             ->first();
 
         return Inertia::render('Client/Index', [
-            'mesaActual' => $mesa,
-            'productos' => $productos,
+            'mesaActual'   => $mesa,
+            'productos'    => $productos,
             'pedidoActual' => $pedidoActual,
-            'puedePedir' => $pedidoActual ? false : true,
+            'puedePedir'   => $pedidoActual ? false : true,
         ]);
     }
 
@@ -64,37 +70,39 @@ class MesaController extends Controller
     {
         $id = $request->id;
 
-  $request->merge([
-    'numero' => strval($request->numero)
-]);
+        $request->merge([
+            'numero' => strval($request->numero)
+        ]);
 
-$validated = $request->validate([
-    'numero' => 'required|string|max:20|unique:mesas,numero,' . ($id ?? 'NULL'),
-]);
+        $validated = $request->validate([
+            'numero' => 'required|string|max:20|unique:mesas,numero,' . ($id ?? 'NULL'),
+        ]);
+
         if ($id) {
-    // ✏️ ACTUALIZAR
-    $mesa = Mesa::findOrFail($id);
-    $mesa->numero = $validated['numero'];
+            // ✏️ ACTUALIZAR
+            $mesa = Mesa::findOrFail($id);
+            $mesa->numero = $validated['numero'];
 
+            // 🔐 ASEGURAR TOKEN SI NO EXISTE
+            if (!$mesa->qr_token) {
+                $mesa->qr_token = Str::random(20);
+            }
 
-    // 🔐 ASEGURAR TOKEN SI NO EXISTE
-    if (!$mesa->qr_token) {
-        $mesa->qr_token = Str::random(20);
-    }
+            $mesa->save();
+        } else {
+            // ➕ CREAR
+            $mesa = new Mesa();
+            $mesa->numero = $validated['numero'];
+            $mesa->qr_token = Str::random(20);
+            $mesa->save();
+        }
 
-    $mesa->save();
-} else {
-    // ➕ CREAR
-    $mesa = new Mesa();
-    $mesa->numero = $validated['numero'];
-    $mesa->qr_token = Str::random(20);
-    $mesa->save();
-}
         return back();
     }
 
     // 🗑️ Eliminar mesa
-    public function destroy(Mesa $mesa) {
+    public function destroy(Mesa $mesa)
+    {
         $mesa->delete();
         return back();
     }
