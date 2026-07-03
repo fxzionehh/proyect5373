@@ -1,8 +1,10 @@
 <script setup>
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import axios from 'axios'
 import { useForm } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
+
+let intervalo = null
 
 const props = defineProps({
     productos: Array,
@@ -11,15 +13,11 @@ const props = defineProps({
     puedePedir: Boolean,
 })
 
-/**
- * =========================
- * ESTADO SIMPLE DEL PEDIDO
- * =========================
- */
-const estado = ref(null)
-const pedidoId = ref(null)
+const paso = ref(1)
+const productoSeleccionado = ref(null)
 
-let intervalo = null
+
+const pedidoActualLocal = ref(props.pedidoActual || null)
 
 const estadoTexto = {
     pendiente: 'Pedido solicitado',
@@ -28,19 +26,39 @@ const estadoTexto = {
     entregado: 'Entregado',
 }
 
-/**
- * =========================
- * PASOS UI
- * =========================
- */
-const paso = ref(1)
-const productoSeleccionado = ref(null)
 
-/**
- * =========================
- * FORM INERTIA
- * =========================
- */
+const iniciarPolling = (id) => {
+   
+    if (intervalo) clearInterval(intervalo)
+    
+    intervalo = setInterval(async () => {
+        try {
+            const res = await axios.get(`/pedidos/${id}`)
+            pedidoActualLocal.value = {
+                ...pedidoActualLocal.value,
+                estado: res.data.estado,
+                detalles: res.data.detalles
+            }
+        } catch (err) {
+            console.log('error actualizando pedido', err)
+        }
+    }, 3000)
+}
+
+
+watch(pedidoActualLocal, (nuevoPedido) => {
+    if (nuevoPedido?.id) {
+        iniciarPolling(nuevoPedido.id)
+    } else {
+        if (intervalo) clearInterval(intervalo)
+    }
+}, { immediate: true })
+
+onUnmounted(() => {
+    if (intervalo) clearInterval(intervalo)
+})
+
+
 const mesaId = computed(() => props.mesaActual?.id ?? null)
 
 const form = useForm({
@@ -50,106 +68,31 @@ const form = useForm({
     tamano: null,
 })
 
-/**
- * =========================
- * PRECIO
- * =========================
- */
 const precioSeleccionado = computed(() => {
     if (!productoSeleccionado.value) return 0
     return productoSeleccionado.value[`precio_${form.tamano}`] || 0
 })
 
-/**
- * =========================
- * POLLING SOLO ESTADO
- * =========================
- */
-const iniciarPolling = (id) => {
-    if (!id) return
 
-    pedidoId.value = id
-
-    if (intervalo) clearInterval(intervalo)
-
-    intervalo = setInterval(async () => {
-        try {
-            const res = await axios.get(`/pedidos/${id}/estado`)
-            estado.value = res.data.estado
-        } catch (err) {
-            console.log('error polling estado', err)
-        }
-    }, 3000)
-}
-
-/**
- * =========================
- * WATCH PEDIDO INICIAL
- * =========================
- */
-watch(
-    () => props.pedidoActual,
-    (nuevo) => {
-        if (nuevo?.id) {
-            pedidoId.value = nuevo.id
-            estado.value = nuevo.estado
-            iniciarPolling(nuevo.id)
-        } else {
-            estado.value = null
-            if (intervalo) clearInterval(intervalo)
-        }
-    },
-    { immediate: true }
-)
-
-/**
- * =========================
- * CLEANUP
- * =========================
- */
-onUnmounted(() => {
-    if (intervalo) clearInterval(intervalo)
-})
-
-/**
- * =========================
- * ACCIONES UI
- * =========================
- */
 const seleccionarProducto = (p) => {
-    if (estado.value || !props.puedePedir || p.stock <= 0) return
+    if (pedidoActualLocal.value || !props.puedePedir || p.stock <= 0) return
 
     productoSeleccionado.value = p
     form.producto_id = p.id
     paso.value = 2
 }
 
-const irNombre = () => {
-    paso.value = 3
-}
+const irNombre = () => paso.value = 3
+const volver = () => paso.value--
 
-const volver = () => {
-    paso.value--
-}
-
-/**
- * =========================
- * CREAR PEDIDO
- * =========================
- */
 const confirmar = () => {
     if (!form.nombre_cliente || !form.tamano) return
 
     form.post('/pedidos', {
         preserveScroll: true,
         onSuccess: (page) => {
-            const nuevo = page.props?.pedidoActual
-
-            if (nuevo?.id) {
-                pedidoId.value = nuevo.id
-                estado.value = nuevo.estado
-                iniciarPolling(nuevo.id)
-            }
+         
+            pedidoActualLocal.value = page.props.pedidoActual
 
             paso.value = 1
             productoSeleccionado.value = null
@@ -162,106 +105,153 @@ const confirmar = () => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-black text-white font-sans">
+    <div class="min-h-screen bg-black text-white font-sans selection:bg-amber-400 selection:text-black">
         <navSito />
 
-        <!-- MESA NO ENCONTRADA -->
-        <div v-if="!mesaActual" class="flex items-center justify-center min-h-[80vh]">
-            <h2 class="text-3xl font-black">Mesa no encontrada</h2>
+        <div v-if="!mesaActual" class="flex flex-col items-center justify-center min-h-[80vh] text-center px-8">
+            <h2 class="text-3xl font-black uppercase tracking-tighter">Mesa no encontrada</h2>
         </div>
 
         <div v-else class="max-w-2xl mx-auto pb-10">
 
-            <!-- HEADER -->
-            <header class="p-6 border-b border-zinc-800 flex justify-between items-center">
+            <header class="p-6 border-b border-zinc-800 flex justify-between items-center bg-black sticky top-0 z-20">
                 <div>
-                    <p class="text-[10px] text-zinc-500 uppercase">Estás en</p>
+                    <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Estás en</p>
                     <h1 class="text-2xl font-black">MESA {{ mesaActual.numero }}</h1>
                 </div>
 
-                <div v-if="estado"
-                    class="px-4 py-1 bg-amber-500 text-black rounded-full text-xs font-black uppercase">
-                    {{ estadoTexto[estado] }}
+                <div v-if="pedidoActualLocal"
+                    class="px-4 py-1.5 bg-amber-500 text-black rounded-full text-[10px] font-black uppercase animate-pulse">
+                    {{ estadoTexto[pedidoActualLocal.estado] }}
                 </div>
             </header>
 
-            <!-- PASO 1 -->
-            <div v-if="paso === 1" class="p-6">
-                <h2 class="text-xl font-black mb-6">
-                    {{ estado ? 'Esperando pedido...' : 'Selecciona tu café' }}
+            <div v-if="paso === 1" class="p-6 animate-in slide-in-from-bottom-10">
+                <h2 class="text-2xl font-black uppercase italic text-zinc-500 mb-6">
+                    {{ pedidoActualLocal ? 'Esperando tu pedido...' : 'Selecciona tu café' }}
                 </h2>
-
+                
                 <div class="grid grid-cols-2 gap-4">
-                    <button
-                        v-for="p in productos"
-                        :key="p.id"
+                    <button 
+                        v-for="p in productos" 
+                        :key="p.id" 
                         @click="seleccionarProducto(p)"
-                        :disabled="estado !== null"
-                        class="p-4 rounded-xl border bg-zinc-900 disabled:opacity-40"
+                        :disabled="pedidoActualLocal !== null"
+                        :class="[
+                            pedidoActualLocal ? 'opacity-30 cursor-not-allowed' : '',
+                            p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50 cursor-not-allowed'
+                        ]"
+                        class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
                     >
-                        <h3 class="font-bold uppercase">{{ p.nombre }}</h3>
-                        <p class="text-xs text-zinc-500">
-                            {{ p.stock > 0 ? 'Disponible' : 'Agotado' }}
+                        <div class="w-12 h-12 bg-black rounded-full flex items-center justify-center mb-4">
+                            <i class="fa-solid fa-mug-hot text-amber-500"></i>
+                        </div>
+                        <h3 class="font-black text-sm uppercase leading-tight">{{ p.nombre }}</h3>
+                        <p class="text-[10px] text-zinc-500 mt-1 uppercase">
+                            {{ p.stock > 0 ? `Desde $${Number(p.precio_nano).toLocaleString('es-CL')}` : 'Agotado' }}
                         </p>
                     </button>
                 </div>
             </div>
 
-            <!-- PASO 2 -->
-            <div v-else-if="paso === 2" class="p-6">
-                <button @click="volver" class="mb-4 text-zinc-400">← Volver</button>
+            <div v-else-if="paso === 2" class="p-6 animate-in slide-in-from-right-10">
+                <button @click="volver" class="mb-8 text-zinc-500 font-bold hover:text-white flex items-center gap-2">
+                    ← VOLVER
+                </button>
 
-                <h2 class="text-2xl font-black mb-4">
-                    {{ productoSeleccionado.nombre }}
-                </h2>
+                <div class="mb-8 bg-zinc-900 p-6 rounded-3xl flex items-center gap-4">
+                    <h2 class="text-3xl font-black uppercase italic">
+                        {{ productoSeleccionado.nombre }}
+                    </h2>
+                </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <button
-                        v-for="t in ['nano','mini','normal','max']"
+                        v-for="t in ['nano', 'mini', 'normal', 'max']"
                         :key="t"
                         @click="form.tamano = t"
-                        :class="form.tamano === t ? 'bg-amber-500 text-black' : 'bg-zinc-900'"
-                        class="p-4 rounded-xl font-bold uppercase"
+                        :class="form.tamano === t
+                            ? 'bg-amber-500 text-black'
+                            : 'bg-zinc-900 text-white'"
+                        class="rounded-3xl border-2 p-4 font-black uppercase"
                     >
                         {{ t }}
-                        <div class="text-xs">
+                        <div class="text-xs mt-1 opacity-70">
                             ${{ Number(productoSeleccionado[`precio_${t}`]).toLocaleString('es-CL') }}
                         </div>
                     </button>
                 </div>
 
-                <div class="mt-6 text-xl font-black">
-                    Total: ${{ Number(precioSeleccionado).toLocaleString('es-CL') }}
+                <div class="mt-8 p-6 bg-zinc-900 rounded-3xl flex justify-between">
+                    <span>Total</span>
+                    <span class="text-2xl font-black">
+                        ${{ Number(precioSeleccionado).toLocaleString('es-CL') }}
+                    </span>
                 </div>
 
                 <button
                     @click="irNombre"
-                    class="mt-6 w-full bg-white text-black py-4 font-black"
+                    class="w-full mt-6 bg-white text-black py-6 rounded-2xl font-black uppercase"
                 >
                     Continuar
                 </button>
             </div>
 
-            <!-- PASO 3 -->
-            <div v-else class="p-6">
-                <button @click="volver" class="text-zinc-400 mb-4">← Volver</button>
-
-                <h2 class="text-3xl font-black mb-6">¿Quién pide?</h2>
-
-                <input
-                    v-model="form.nombre_cliente"
-                    class="w-full p-4 bg-zinc-900 border rounded-xl mb-4"
-                    placeholder="Nombre..."
-                />
-
-                <button
-                    @click="confirmar"
-                    :disabled="form.processing"
-                    class="w-full bg-amber-500 text-black py-4 font-black disabled:opacity-50"
-                >
-                    {{ form.processing ? 'Enviando...' : 'Pedir' }}
+            <div v-else class="p-6 animate-in slide-in-from-right-10">
+                <button @click="volver" class="mb-8 text-zinc-500 font-bold">
+                    ← VOLVER
                 </button>
+
+                <h2 class="text-4xl font-black mb-8 uppercase italic">
+                    ¿Quién pide?
+                </h2>
+
+                <div class="bg-zinc-900 p-8 rounded-3xl">
+                    <input
+                        v-model="form.nombre_cliente"
+                        class="w-full bg-black border-2 border-zinc-800 rounded-2xl p-6 text-xl font-bold"
+                        placeholder="Escribe tu nombre..."
+                    />
+
+                    <button
+                        @click="confirmar"
+                        :disabled="form.processing"
+                        class="w-full mt-6 bg-amber-500 text-black py-6 rounded-2xl font-black uppercase disabled:opacity-50"
+                    >
+                        {{ form.processing ? 'ENVIANDO...' : 'Pedir' }}
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="pedidoActualLocal" class="p-6">
+                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
+                    <h2 class="text-xl font-black uppercase mb-4">Resumen del pedido</h2>
+                    <p class="text-zinc-400 text-sm uppercase">Cliente</p>
+                    <p class="text-lg font-bold mb-4">{{ pedidoActualLocal.nombre_cliente }}</p>
+
+                    <p class="text-zinc-400 text-sm uppercase mb-2">Productos</p>
+                    <div v-for="detalle in pedidoActualLocal.detalles" :key="detalle.id" class="py-3 border-b border-zinc-800 last:border-none">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-bold uppercase">{{ detalle.producto?.nombre }}</p>
+                                <p class="text-xs text-zinc-400 uppercase">Tamaño: {{ detalle.tamano }} · Cant: {{ detalle.cantidad }}</p>
+                            </div>
+                            <p class="font-black text-amber-400">${{ Number(detalle.subtotal).toLocaleString('es-CL') }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                        <p class="text-amber-400 font-bold uppercase text-sm">
+                            {{ estadoTexto[pedidoActualLocal.estado] }}
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
