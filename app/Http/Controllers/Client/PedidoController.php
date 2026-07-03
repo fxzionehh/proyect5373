@@ -12,11 +12,15 @@ use Illuminate\Support\Facades\DB;
 class PedidoController extends Controller
 {
 
-public function show(Pedido $pedido)
+public function show($pedido)
 {
-    return response()->json(
-        $pedido->load('detalles.producto', 'mesa')
-    );
+    $pedido = Pedido::with('detalles.producto', 'mesa')->find($pedido);
+
+    if (!$pedido) {
+        return response()->json(['error' => 'Pedido no encontrado'], 404);
+    }
+
+    return response()->json($pedido);
 }
     public function store(Request $request)
     {
