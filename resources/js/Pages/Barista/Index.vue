@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onUpdated } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { router, usePage } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
@@ -11,14 +11,32 @@ const props = defineProps({
 
 const page = usePage()
 const filtroEstado = ref('todos')
-onUpdated(() => {
-    if (page.props.flash?.error || page.props.flash?.success) {
-        setTimeout(() => {
-            page.props.flash.error = null
-            page.props.flash.success = null
-        }, 4000) 
-    }
+let intervalId = null
+
+
+onMounted(() => {
+    intervalId = setInterval(() => {
+        router.reload({ 
+            only: ['pedidos'], 
+            preserveScroll: true, 
+            preserveState: true,
+            showProgress: false
+        })
+    }, 5000)
 })
+
+
+
+
+const mostrarFlash = (error, success) => {
+    page.props.flash.error = error
+    page.props.flash.success = success
+    setTimeout(() => {
+        page.props.flash.error = null
+        page.props.flash.success = null
+    }, 4000)
+}
+
 const pedidosFiltrados = computed(() => {
     if (filtroEstado.value === 'todos') return props.pedidos
     return props.pedidos.filter(p => p.estado === filtroEstado.value)
@@ -27,24 +45,20 @@ const pedidosFiltrados = computed(() => {
 const cambiarEstado = (pedido, estado) => {
     router.post(`/dashboard/preparacion/${pedido.id}/estado`, { estado }, {
         preserveScroll: true,
-
+        preserveState: true,
         onSuccess: () => {
             router.reload({ only: ['pedidos'] })
         },
-
         onError: (errors) => {
-
-            const mensajeError = errors.message || errors.error || 'Ocurrió un error con el stock';
-            
-        
-            page.props.flash.error = mensajeError;
-            page.props.flash.success = null;
+            const mensajeError = errors.message || errors.error || 'Ocurrió un error con el stock'
+            mostrarFlash(mensajeError, null)
         }
     })
 }
 </script>
 
 <template>
+  
     <div v-if="$page.props.flash?.error || $page.props.flash?.success" 
          class="toast-fixed"
          :class="$page.props.flash?.error ? 'bg-red-600' : 'bg-green-600'">
@@ -57,6 +71,7 @@ const cambiarEstado = (pedido, estado) => {
         <AppLayout />
 
         <section class="flex-1 min-w-0">
+
             <div class="mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-zinc-950/90 px-4 py-2">
                 <div class="flex items-center gap-1 overflow-x-auto whitespace-nowrap pb-1">
                     <button v-for="estado in ['todos', 'pendiente', 'en_preparacion', 'listo', 'entregado']" 
@@ -69,6 +84,7 @@ const cambiarEstado = (pedido, estado) => {
                 </div>
             </div>
 
+          
             <div v-if="pedidosFiltrados.length === 0" class="bg-white border border-zinc-200 rounded-xl p-8 text-center text-sm text-zinc-400 max-w-md mx-auto mt-12 shadow-sm">
                 <i class="fa-solid fa-inbox block text-zinc-300 text-3xl mb-3"></i>
                 No hay pedidos en esta sección.
