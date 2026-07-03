@@ -1,10 +1,9 @@
 <script setup>
 import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import axios from 'axios'
-import { useForm, usePage } from '@inertiajs/vue3'
+import { useForm } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
 
-const page = usePage()
 let intervalo = null
 
 const props = defineProps({
@@ -16,49 +15,72 @@ const props = defineProps({
 
 const paso = ref(1)
 const productoSeleccionado = ref(null)
+
+
 const pedidoActualLocal = ref(props.pedidoActual || null)
+
+console.log('========== DATOS INICIALES ==========')
+console.log('pedidoActual prop:', props.pedidoActual)
+console.log('pedidoActualLocal:', pedidoActualLocal.value)
+console.log('====================================')
 
 const estadoTexto = {
     pendiente: 'Pedido solicitado',
-    en_preparacion: 'Preparando tu café',
+    en_preparacion: 'Preparando tu cafe',
     listo: 'Listo',
     entregado: 'Entregado',
 }
 
+
 const iniciarPolling = (id) => {
+
+    console.log('Iniciando polling')
+    console.log('ID recibido:', id)
+
     if (intervalo) clearInterval(intervalo)
 
     intervalo = setInterval(async () => {
         try {
-            const res = await axios.get(`/pedidos/${id}`)
-            
-            // Actualizamos los datos
-            pedidoActualLocal.value = res.data
 
-            // LÓGICA DE LIMPIEZA: Si el pedido ya fue entregado
-            if (res.data.estado === 'entregado') {
-                clearInterval(intervalo)
-                // Esperamos 4 segundos para que el usuario vea el estado "Entregado"
-                // y luego liberamos la mesa para un nuevo pedido
-                setTimeout(() => {
-                    pedidoActualLocal.value = null
-                }, 4000)
+            console.log('Consultando:', `/pedidos/${id}`)
+
+            const res = await axios.get(`/pedidos/${id}`)
+
+            console.log('Respuesta:', res.data)
+
+            pedidoActualLocal.value = {
+                ...pedidoActualLocal.value,
+                estado: res.data.estado,
+                detalles: res.data.detalles
             }
+
         } catch (err) {
-            console.error('Error al actualizar estado:', err)
+
+            console.log('ERROR COMPLETO')
+            console.log(err)
+
+            if (err.response) {
+                console.log('Status:', err.response.status)
+                console.log('Data:', err.response.data)
+            }
+
         }
     }, 3000)
 }
 
-// Watch para iniciar polling si llega un nuevo pedido
 watch(
-    () => pedidoActualLocal.value?.id,
-    (nuevoId) => {
-        if (nuevoId) {
-            iniciarPolling(nuevoId)
+    pedidoActualLocal,
+    (nuevoPedido) => {
+
+        console.log('Watch ejecutado')
+        console.log(nuevoPedido)
+
+        if (nuevoPedido?.id) {
+            iniciarPolling(nuevoPedido.id)
         } else {
-            clearInterval(intervalo)
+            console.log('No existe ID del pedido')
         }
+
     },
     { immediate: true }
 )
@@ -66,6 +88,7 @@ watch(
 onUnmounted(() => {
     if (intervalo) clearInterval(intervalo)
 })
+
 
 const mesaId = computed(() => props.mesaActual?.id ?? null)
 
@@ -77,12 +100,12 @@ const form = useForm({
 })
 
 const precioSeleccionado = computed(() => {
-    if (!productoSeleccionado.value || !form.tamano) return 0
+    if (!productoSeleccionado.value) return 0
     return productoSeleccionado.value[`precio_${form.tamano}`] || 0
 })
 
+
 const seleccionarProducto = (p) => {
-    // Si hay un pedido, no dejamos seleccionar
     if (pedidoActualLocal.value || !props.puedePedir || p.stock <= 0) return
 
     productoSeleccionado.value = p
@@ -99,11 +122,14 @@ const confirmar = () => {
     form.post('/pedidos', {
         preserveScroll: true,
         onSuccess: () => {
-            // Refrescamos el pedido local con la respuesta (Inertia suele actualizar props)
+         
             pedidoActualLocal.value = page.props.pedidoActual
+
             paso.value = 1
             productoSeleccionado.value = null
-            form.reset('nombre_cliente', 'tamano', 'producto_id')
+            form.reset()
+            form.tamano = null
+            form.producto_id = null
         }
     })
 }
@@ -118,6 +144,7 @@ const confirmar = () => {
         </div>
 
         <div v-else class="max-w-2xl mx-auto pb-10">
+
             <header class="p-6 border-b border-zinc-800 flex justify-between items-center bg-black sticky top-0 z-20">
                 <div>
                     <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Estás en</p>
@@ -130,7 +157,6 @@ const confirmar = () => {
                 </div>
             </header>
 
-            <!-- PÁGINA 1: Catálogo -->
             <div v-if="paso === 1" class="p-6 animate-in slide-in-from-bottom-10">
                 <h2 class="text-2xl font-black uppercase italic text-zinc-500 mb-6">
                     {{ pedidoActualLocal ? 'Esperando tu pedido...' : 'Selecciona tu café' }}
@@ -159,7 +185,6 @@ const confirmar = () => {
                 </div>
             </div>
 
-            <!-- PÁGINA 2: Selección de tamaño -->
             <div v-else-if="paso === 2" class="p-6 animate-in slide-in-from-right-10">
                 <button @click="volver" class="mb-8 text-zinc-500 font-bold hover:text-white flex items-center gap-2">
                     ← VOLVER
@@ -176,7 +201,9 @@ const confirmar = () => {
                         v-for="t in ['nano', 'mini', 'normal', 'max']"
                         :key="t"
                         @click="form.tamano = t"
-                        :class="form.tamano === t ? 'bg-amber-500 text-black' : 'bg-zinc-900 text-white'"
+                        :class="form.tamano === t
+                            ? 'bg-amber-500 text-black'
+                            : 'bg-zinc-900 text-white'"
                         class="rounded-3xl border-2 p-4 font-black uppercase"
                     >
                         {{ t }}
@@ -186,20 +213,29 @@ const confirmar = () => {
                     </button>
                 </div>
 
+                <div class="mt-8 p-6 bg-zinc-900 rounded-3xl flex justify-between">
+                    <span>Total</span>
+                    <span class="text-2xl font-black">
+                        ${{ Number(precioSeleccionado).toLocaleString('es-CL') }}
+                    </span>
+                </div>
+
                 <button
                     @click="irNombre"
-                    :disabled="!form.tamano"
-                    class="w-full mt-6 bg-white text-black py-6 rounded-2xl font-black uppercase disabled:opacity-30"
+                    class="w-full mt-6 bg-white text-black py-6 rounded-2xl font-black uppercase"
                 >
                     Continuar
                 </button>
             </div>
 
-            <!-- PÁGINA 3: Nombre -->
             <div v-else class="p-6 animate-in slide-in-from-right-10">
-                <button @click="volver" class="mb-8 text-zinc-500 font-bold">← VOLVER</button>
+                <button @click="volver" class="mb-8 text-zinc-500 font-bold">
+                    ← VOLVER
+                </button>
 
-                <h2 class="text-4xl font-black mb-8 uppercase italic">¿Quién pide?</h2>
+                <h2 class="text-4xl font-black mb-8 uppercase italic">
+                    ¿Quién pide?
+                </h2>
 
                 <div class="bg-zinc-900 p-8 rounded-3xl">
                     <input
@@ -210,7 +246,7 @@ const confirmar = () => {
 
                     <button
                         @click="confirmar"
-                        :disabled="form.processing || !form.nombre_cliente"
+                        :disabled="form.processing"
                         class="w-full mt-6 bg-amber-500 text-black py-6 rounded-2xl font-black uppercase disabled:opacity-50"
                     >
                         {{ form.processing ? 'ENVIANDO...' : 'Pedir' }}
@@ -218,15 +254,26 @@ const confirmar = () => {
                 </div>
             </div>
 
-            <!-- Resumen del pedido si existe -->
             <div v-if="pedidoActualLocal" class="p-6">
                 <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
                     <h2 class="text-xl font-black uppercase mb-4">Resumen del pedido</h2>
-                    <p class="text-zinc-400 text-sm uppercase">Cliente: {{ pedidoActualLocal.nombre_cliente }}</p>
-                    
+                    <p class="text-zinc-400 text-sm uppercase">Cliente</p>
+                    <p class="text-lg font-bold mb-4">{{ pedidoActualLocal.nombre_cliente }}</p>
+
+                    <p class="text-zinc-400 text-sm uppercase mb-2">Productos</p>
+                    <div v-for="detalle in pedidoActualLocal.detalles" :key="detalle.id" class="py-3 border-b border-zinc-800 last:border-none">
+                        <div class="flex justify-between">
+                            <div>
+                                <p class="font-bold uppercase">{{ detalle.producto?.nombre }}</p>
+                                <p class="text-xs text-zinc-400 uppercase">Tamaño: {{ detalle.tamano }} · Cant: {{ detalle.cantidad }}</p>
+                            </div>
+                            <p class="font-black text-amber-400">${{ Number(detalle.subtotal).toLocaleString('es-CL') }}</p>
+                        </div>
+                    </div>
+
                     <div class="mt-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
                         <p class="text-amber-400 font-bold uppercase text-sm">
-                            Estado: {{ estadoTexto[pedidoActualLocal.estado] }}
+                            {{ estadoTexto[pedidoActualLocal.estado] }}
                         </p>
                     </div>
                 </div>
@@ -234,3 +281,8 @@ const confirmar = () => {
         </div>
     </div>
 </template>
+
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
