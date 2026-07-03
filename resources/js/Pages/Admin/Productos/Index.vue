@@ -56,20 +56,16 @@ const cerrarModal = () => {
 }
 
 const guardar = () => {
-    if (editando.value) {
-        form.put(`/dashboard/productos/${productoEditando.value.id}`, {
+  form.post('/dashboard/productos', {
             onSuccess: cerrarModal
         })
-    } else {
-        form.post('/dashboard/productos', {
-            onSuccess: cerrarModal
-        })
-    }
 }
 
 const eliminar = (producto) => {
     if (confirm(`¿Eliminar el producto ${producto.nombre}?`)) {
-        router.delete(`/dashboard/productos/${producto.id}`)
+        router.delete(`/dashboard/productos/${producto.id}`, {
+            preserveScroll: true
+        })
     }
 }
 
@@ -88,7 +84,7 @@ const limpiar = () => {
         <AppLayout />
 
         <main class="flex-1 p-8 w-full overflow-hidden">
-            <!-- Header -->
+     
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-black text-zinc-900">Productos</h1>
 
@@ -101,7 +97,7 @@ const limpiar = () => {
                 </button>
             </div>
 
-            <!-- Tabla -->
+        
             <section class="bg-white rounded-xl border border-gray-200 shadow-sm w-full overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[950px]">
@@ -180,129 +176,131 @@ const limpiar = () => {
                 </div>
             </section>
 
-            <!-- Modal -->
-            <div
-                v-if="modalAbierto"
-                class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-            >
-                <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden">
-                    <!-- Header modal -->
-                    <div class="bg-zinc-900 text-white px-5 py-4 flex justify-between items-center">
-                        <h2 class="font-bold text-lg">
-                            {{ editando ? 'Editar producto' : 'Nuevo producto' }}
-                        </h2>
+       
+<div
+    v-if="modalAbierto"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4"
+>
+    <div class="bg-white w-full max-w-md sm:max-w-lg md:max-w-xl mx-auto rounded-2xl shadow-2xl overflow-hidden">
 
-                        <button @click="cerrarModal" class="text-white/70 hover:text-white">
-                            ✕
-                        </button>
-                    </div>
+      
+        <div class="bg-zinc-900 text-white px-5 py-4 flex justify-between items-center">
+            <h2 class="font-bold text-lg">
+                {{ editando ? 'Editar producto' : 'Nuevo producto' }}
+            </h2>
 
-                    <!-- Form -->
-                    <form @submit.prevent="guardar" class="p-6 space-y-5">
-                        <!-- Nombre -->
-                        <div>
-                            <label class="text-xs font-bold text-zinc-500 uppercase">Nombre</label>
-                            <input
-                                v-model="form.nombre"
-                                type="text"
-                                placeholder="Ej: Cappuccino"
-                                class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
-                            />
-                            <div v-if="form.errors.nombre" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.nombre }}
-                            </div>
-                        </div>
+            <button @click="cerrarModal" class="text-white/70 hover:text-white">
+                ✕
+            </button>
+        </div>
 
-                        <!-- Precios -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Nano</label>
-                                <input
-                                    v-model="form.precio_nano"
-                                    type="number"
-                                    placeholder="0"
-                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
-                                />
-                                <div v-if="form.errors.precio_nano" class="text-red-500 text-sm mt-1">
-                                    {{ form.errors.precio_nano }}
-                                </div>
-                            </div>
+        
+        <form @submit.prevent="guardar" class="p-5 sm:p-6 space-y-5">
 
-                            <div>
-                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Mini</label>
-                                <input
-                                    v-model="form.precio_mini"
-                                    type="number"
-                                    placeholder="0"
-                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
-                                />
-                                <div v-if="form.errors.precio_mini" class="text-red-500 text-sm mt-1">
-                                    {{ form.errors.precio_mini }}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Normal</label>
-                                <input
-                                    v-model="form.precio_normal"
-                                    type="number"
-                                    placeholder="0"
-                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
-                                />
-                                <div v-if="form.errors.precio_normal" class="text-red-500 text-sm mt-1">
-                                    {{ form.errors.precio_normal }}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="text-xs font-bold text-zinc-500 uppercase">Precio Max</label>
-                                <input
-                                    v-model="form.precio_max"
-                                    type="number"
-                                    placeholder="0"
-                                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
-                                />
-                                <div v-if="form.errors.precio_max" class="text-red-500 text-sm mt-1">
-                                    {{ form.errors.precio_max }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Stock -->
-                        <div>
-                            <label class="text-xs font-bold text-zinc-500 uppercase">Stock</label>
-                            <input
-                                v-model="form.stock"
-                                type="number"
-                                placeholder="0"
-                                class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
-                            />
-                            <div v-if="form.errors.stock" class="text-red-500 text-sm mt-1">
-                                {{ form.errors.stock }}
-                            </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="flex justify-end gap-2 pt-2">
-                            <button
-                                type="button"
-                                @click="cerrarModal"
-                                class="px-4 py-2 border rounded-xl text-sm hover:bg-gray-50"
-                            >
-                                Cancelar
-                            </button>
-
-                            <button
-                                type="submit"
-                                :disabled="form.processing"
-                                class="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-50"
-                            >
-                                {{ form.processing ? 'Guardando...' : 'Guardar' }}
-                            </button>
-                        </div>
-                    </form>
+           
+            <div>
+                <label class="text-xs font-bold text-zinc-500 uppercase">Nombre</label>
+                <input
+                    v-model="form.nombre"
+                    type="text"
+                    placeholder="Ej: Cappuccino"
+                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+                <div v-if="form.errors.nombre" class="text-red-500 text-sm mt-1">
+                    {{ form.errors.nombre }}
                 </div>
             </div>
+
+           
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+                <div>
+                    <label class="text-xs font-bold text-zinc-500 uppercase">Precio Nano</label>
+                    <input
+                        v-model="form.precio_nano"
+                        type="number"
+                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <div v-if="form.errors.precio_nano" class="text-red-500 text-sm mt-1">
+                        {{ form.errors.precio_nano }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-zinc-500 uppercase">Precio Mini</label>
+                    <input
+                        v-model="form.precio_mini"
+                        type="number"
+                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <div v-if="form.errors.precio_mini" class="text-red-500 text-sm mt-1">
+                        {{ form.errors.precio_mini }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-zinc-500 uppercase">Precio Normal</label>
+                    <input
+                        v-model="form.precio_normal"
+                        type="number"
+                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <div v-if="form.errors.precio_normal" class="text-red-500 text-sm mt-1">
+                        {{ form.errors.precio_normal }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-bold text-zinc-500 uppercase">Precio Max</label>
+                    <input
+                        v-model="form.precio_max"
+                        type="number"
+                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <div v-if="form.errors.precio_max" class="text-red-500 text-sm mt-1">
+                        {{ form.errors.precio_max }}
+                    </div>
+                </div>
+
+            </div>
+
+         
+            <div>
+                <label class="text-xs font-bold text-zinc-500 uppercase">Stock</label>
+                <input
+                    v-model="form.stock"
+                    type="number"
+                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                />
+                <div v-if="form.errors.stock" class="text-red-500 text-sm mt-1">
+                    {{ form.errors.stock }}
+                </div>
+            </div>
+
+           
+            <div class="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+
+                <button
+                    type="button"
+                    @click="cerrarModal"
+                    class="px-4 py-2 border rounded-xl text-sm hover:bg-gray-50"
+                >
+                    Cancelar
+                </button>
+
+                <button
+                    type="submit"
+                    :disabled="form.processing"
+                    class="px-5 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-50"
+                >
+                    {{ form.processing ? 'Guardando...' : 'Guardar' }}
+                </button>
+
+            </div>
+
+        </form>
+    </div>
+</div>
         </main>
     </div>
 </template>

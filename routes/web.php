@@ -14,15 +14,17 @@ use App\Http\Controllers\Barista\MesaController;
 use App\Http\Controllers\Client\PedidoController;
 use App\Http\Controllers\Admin\UsuarioController;
 //Route::get('/', [IndexController::class, 'index'])->name('inicio');
+use App\Http\Controllers\ForgotPasswordController;
+
 
 Route::get('/', [LoginController::class, 'create'])->name('login');
 Route::post('/login', [LoginController::class, 'store']);
 Route::post('/logout', [LoginController::class, 'destroy']);
 
+
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard', fn () => Inertia::render('Admin/Dashboard'))
-        ->name('dashboard');
+    Route::get('/dashboard/pedidos', fn () => Inertia::render('Admin/Pedidos/Index'))->name('dashboard.pedidos');
 
     Route::get('/dashboard/roles', [RoleController::class, 'index'])
         ->middleware('permission:ver roles');    
@@ -44,7 +46,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/dashboard/usuarios/{usuario}', [UsuarioController::class, 'destroy']);
 
-
     Route::get('/dashboard/productos', [ProductoController::class, 'index'])
         ->middleware('permission:ver producto');
 
@@ -56,12 +57,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/dashboard/productos/{producto}', [ProductoController::class, 'destroy'])
         ->middleware('permission:eliminar producto');
-
-    /*
-    |--------------------------------------------------------------------------
-    | INSUMOS
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/dashboard/insumos', [InsumoController::class, 'index'])
         ->middleware('permission:ver insumo');
@@ -75,12 +70,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/dashboard/insumos/{insumo}', [InsumoController::class, 'destroy'])
         ->middleware('permission:eliminar insumo');
 
-    /*
-    |--------------------------------------------------------------------------
-    | PEDIDOS
-    |--------------------------------------------------------------------------
-    */
-
     Route::get('/dashboard/pedidos', [PedidosController::class, 'index'])
         ->middleware('permission:ver pedido');
 
@@ -92,12 +81,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/dashboard/pedidos/{pedido}', [PedidosController::class, 'destroy'])
         ->middleware('permission:eliminar pedido');
-
-    /*
-    |--------------------------------------------------------------------------
-    | MESAS
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/dashboard/mesas', [MesaController::class, 'index'])
         ->middleware('permission:ver mesa');
@@ -111,20 +94,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/dashboard/mesas/{mesa}', [MesaController::class, 'destroy'])
         ->middleware('permission:eliminar mesa');
 
-    /*
-    |--------------------------------------------------------------------------
-    | REPORTES
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/dashboard/reportes', [ReporteController::class, 'index'])
         ->middleware('permission:ver reporte');
-
-    /*
-    |--------------------------------------------------------------------------
-    | PREPARACIÓN
-    |--------------------------------------------------------------------------
-    */
 
     Route::get('/dashboard/preparacion', [PrepararPedidoController::class, 'index'])
         ->middleware('permission:ver preparacion');

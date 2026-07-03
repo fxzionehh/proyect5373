@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 class RoleController extends Controller
 {
-    // 📋 Lista de roles
+
     public function index()
     {
         return Inertia::render('Admin/Roles/Index', [
@@ -19,7 +19,7 @@ class RoleController extends Controller
         ]);
     }
 
-    // 🔎 Edit (API simple)
+
     public function edit($id)
     {
         $role = Role::with('permissions')->find($id);
@@ -33,7 +33,7 @@ class RoleController extends Controller
         return response()->json($role);
     }
 
-    // 💾 Crear / actualizar rol
+  
     public function store(Request $request)
     {
         $id = $request->id;
@@ -44,20 +44,20 @@ class RoleController extends Controller
         ]);
 
         if ($id) {
-            // ✏️ ACTUALIZAR
+          
             $role = Role::findOrFail($id);
 
             $role->nombre = $validated['nombre'];
             $role->save();
         } else {
-            // ➕ CREAR
+         
             $role = new Role();
 
             $role->nombre = $validated['nombre'];
             $role->save();
         }
 
-        // 🔐 Sincronizar permisos
+      
         $role->permissions()->sync(
             $request->permissions ?? []
         );
@@ -65,7 +65,7 @@ class RoleController extends Controller
         return back();
     }
 
-    // 🗑️ Eliminar rol
+
     public function destroy(Role $role)
     {
         $role->permissions()->detach();

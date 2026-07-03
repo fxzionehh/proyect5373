@@ -12,7 +12,7 @@ use Inertia\Inertia;
 
 class MesaController extends Controller
 {
-    // 📋 Lista de mesas
+  
     public function index()
     {
         return Inertia::render('Admin/Mesas/Index', [
@@ -20,37 +20,29 @@ class MesaController extends Controller
         ]);
     }
 
-    // 🔎 Edit (API simple)
-    public function edit($id)
-    {
-        $mesa = Mesa::find($id);
-
-        if (!$mesa) {
-            return response()->json([
-                'error' => 'No encontrada',
-            ], 404);
-        }
-
-        return response()->json($mesa);
-    }
-
-    // 🍽️ Entrada cliente a mesa (PROTEGIDA POR QR)
+  
     public function show($id, Request $request)
     {
         $mesa = Mesa::findOrFail($id);
 
-        // 🔐 VALIDACIÓN QR
+   
         if (!$request->has('token') || $request->token !== $mesa->qr_token) {
             abort(403, 'Acceso no autorizado a la mesa');
         }
 
-        $productos = Producto::orderBy('nombre')->get();
+  
+        $productos = Producto::select(
+            'id', 
+            'nombre', 
+            'precio_nano', 
+            'precio_mini', 
+            'precio_normal', 
+            'precio_max', 
+            'stock'
+        )
+        ->orderBy('nombre')
+        ->get();
 
-        /**
-         * IMPORTANTE:
-         * Si quieres que el cliente siga viendo el resumen cuando el pedido esté LISTO,
-         * entonces 'listo' también debe contarse como pedido actual.
-         */
         $pedidoActual = Pedido::with('detalles.producto')
             ->where('mesa_id', $mesa->id)
             ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
@@ -65,7 +57,7 @@ class MesaController extends Controller
         ]);
     }
 
-    // 💾 Crear / actualizar mesa
+
     public function store(Request $request)
     {
         $id = $request->id;
@@ -79,18 +71,15 @@ class MesaController extends Controller
         ]);
 
         if ($id) {
-            // ✏️ ACTUALIZAR
             $mesa = Mesa::findOrFail($id);
             $mesa->numero = $validated['numero'];
 
-            // 🔐 ASEGURAR TOKEN SI NO EXISTE
             if (!$mesa->qr_token) {
                 $mesa->qr_token = Str::random(20);
             }
 
             $mesa->save();
         } else {
-            // ➕ CREAR
             $mesa = new Mesa();
             $mesa->numero = $validated['numero'];
             $mesa->qr_token = Str::random(20);
@@ -100,7 +89,7 @@ class MesaController extends Controller
         return back();
     }
 
-    // 🗑️ Eliminar mesa
+
     public function destroy(Mesa $mesa)
     {
         $mesa->delete();

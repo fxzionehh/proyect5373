@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
 class UsuarioController extends Controller
@@ -12,60 +14,57 @@ class UsuarioController extends Controller
 
     public function index()
     {
+
+        $roles = Role::all();
+   //dd($roles);
         return Inertia::render('Admin/Usuarios/Index', [
-            'usuarios' => User::orderBy('name')->get(),
+            'usuarios' => User::with('role')->orderBy('name')->get(),
+            'roles'    => Role::all(),
         ]);
     }
 
-    // 🔎 Edit (API simple)
+  
     public function edit($id)
     {
         $usuario = User::find($id);
-
-        if (!$usuario) {
-            return response()->json([
-                'error' => ' usuario no encontrado',
-            ], 404);
-        }
-
-        return response()->json($usuario);
+        return $usuario 
+            ? response()->json($usuario) 
+            : response()->json(['error' => 'Usuario no encontrado'], 404);
     }
 
-    // 💾 Crear / actualizar usuario
-    public function store(Request $request){
+  
+    public function store(Request $request)
+    {
+      
         $id = $request->id;
-
+        
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'required|string|min:8|confirmed',
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|email|unique:users,email,' . $id,
+            'role_id'  => 'required|exists:roles,id',
+            'password' => $id ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
         ]);
 
-        if ($id) {
-            // ✏️ ACTUALIZAR
-            $usuario = User::findOrFail($id);
+    
+        $usuario = $id ? User::findOrFail($id) : new User();
 
-            $usuario->name = $validated['name'];
-            $usuario->email = $validated['email'];
-            $usuario->password = bcrypt($validated['password']);
-        } else {
-            // ➕ CREAR
-            $usuario = new User();
+  
+        $usuario->fill($request->only(['name', 'email', 'role_id']));
 
-            $usuario->name = $validated['name'];
-            $usuario->email = $validated['email'];
-            $usuario->password = bcrypt($validated['password']);
+       
+        if ($request->filled('password')) {
+            $usuario->password = Hash::make($request->password);
         }
 
+    
         $usuario->save();
 
-        return back();
+        return back()->with('message', 'Usuario guardado correctamente');
     }
 
-    // 🗑️ Eliminar usuario
-    public function destroy(User $usuario){
+    public function destroy(User $usuario)
+    {
         $usuario->delete();
-
-        return back();
+        return back()->with('message', 'Usuario eliminado');
     }
 }

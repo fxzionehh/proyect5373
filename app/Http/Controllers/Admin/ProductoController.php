@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 class ProductoController extends Controller
 {
-    // 📋 Lista de productos
+   
     public function index()
     {
         return Inertia::render('Admin/Productos/Index', [
@@ -19,7 +19,7 @@ class ProductoController extends Controller
         ]);
     }
 
-    // 🔎 Edit (API simple)
+   
     public function edit($id)
     {
         $producto = Producto::find($id);
@@ -33,7 +33,7 @@ class ProductoController extends Controller
         return response()->json($producto);
     }
 
-    // 💾 Crear / actualizar producto
+
     public function store(Request $request)
     {
         $id = $request->id;
@@ -48,7 +48,7 @@ class ProductoController extends Controller
         ]);
 
         if ($id) {
-            // ✏️ ACTUALIZAR
+         
             $producto = Producto::findOrFail($id);
 
             $producto->nombre = $validated['nombre'];
@@ -60,7 +60,7 @@ class ProductoController extends Controller
 
             $producto->save();
         } else {
-            // ➕ CREAR
+      
             $producto = new Producto();
 
             $producto->nombre = $validated['nombre'];
@@ -76,7 +76,7 @@ class ProductoController extends Controller
         return back();
     }
 
-    // 🗑️ Eliminar producto
+
     public function destroy(Producto $producto)
     {
         $producto->delete();

@@ -7,7 +7,7 @@ import navSito from '@/Components/Nav.vue'
 
     <navSito />
 
-    <!-- Hero -->
+  
     <section class="bg-[#2f2a25] py-16 px-6 shadow-lg">
         <div class="max-w-5xl mx-auto text-center">
 

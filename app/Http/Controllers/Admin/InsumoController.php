@@ -9,7 +9,7 @@ use Inertia\Inertia;
 
 class InsumoController extends Controller
 {
-    // 📋 Lista de insumos
+
     public function index()
     {
         return Inertia::render('Admin/Insumos/Index', [
@@ -17,7 +17,7 @@ class InsumoController extends Controller
         ]);
     }
 
-    // 🔎 Edit (API simple)
+
     public function edit($id)
     {
         $insumo = Insumo::find($id);
@@ -31,7 +31,7 @@ class InsumoController extends Controller
         return response()->json($insumo);
     }
 
-    // 💾 Crear / actualizar insumo
+ 
     public function store(Request $request)
     {
         $id = $request->id;
@@ -42,7 +42,7 @@ class InsumoController extends Controller
         ]);
 
         if ($id) {
-            // ✏️ ACTUALIZAR
+         
             $insumo = Insumo::findOrFail($id);
 
             $insumo->nombre = $validated['nombre'];
@@ -50,7 +50,7 @@ class InsumoController extends Controller
 
             $insumo->save();
         } else {
-            // ➕ CREAR
+       
             $insumo = new Insumo();
 
             $insumo->nombre = $validated['nombre'];
@@ -62,7 +62,7 @@ class InsumoController extends Controller
         return back();
     }
 
-    // 🗑️ Eliminar insumo
+
     public function destroy(Insumo $insumo)
     {
         $insumo->delete();

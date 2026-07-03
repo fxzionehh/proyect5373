@@ -39,48 +39,51 @@ class PrepararPedidoController extends Controller
         ]);
     }
 
-    public function store(Request $request, Pedido $pedido)
-    {
-        $request->validate([
-            'estado' => 'required|in:pendiente,en_preparacion,listo,entregado',
-        ]);
+   public function store(Request $request, Pedido $pedido)
+{
+    $request->validate([
+        'estado' => 'required|in:pendiente,en_preparacion,listo,entregado',
+    ]);
 
+    try {
         DB::transaction(function () use ($request, $pedido) {
-
             $estadoAnterior = $pedido->estado;
 
-            $pedido->load('detalles');
-
-            $pedido->update([
-                'estado' => $request->estado,
-            ]);
-
-            
-            /**
-             * SOLO cuando pasa a LISTO por primera vez:
-             * - descontar stock
-             * - liberar mesa
-             */
+          
             if ($request->estado === 'listo' && $estadoAnterior !== 'listo') {
+                $pedido->load('detalles');
 
                 foreach ($pedido->detalles as $detalle) {
                     $producto = Producto::lockForUpdate()->findOrFail($detalle->producto_id);
 
                     if ($producto->stock < $detalle->cantidad) {
-                        abort(422, "No hay stock suficiente para {$producto->nombre}");
+                   
+                        throw new \Illuminate\Validation\ValidationException(
+                            \Illuminate\Support\Facades\Validator::make([], []),
+                            \Illuminate\Support\Facades\Response::json(['error' => "Stock insuficiente para {$producto->nombre}"], 422)
+                        );
                     }
 
                     $producto->decrement('stock', $detalle->cantidad);
                 }
+            }
 
-                if ($pedido->mesa_id) {
-                    Mesa::where('id', $pedido->mesa_id)->update([
-                        'estado' => 'libre'
-                    ]);
-                }
+      
+            $pedido->update(['estado' => $request->estado]);
+
+        
+            if ($request->estado === 'entregado' && $pedido->mesa_id) {
+                Mesa::where('id', $pedido->mesa_id)->update(['estado' => 'libre']);
             }
         });
 
-        return back();
+        return back()->with('success', 'Pedido actualizado correctamente');
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+       
+        return back()->withErrors(['stock' => $e->getResponse()->getData()->error]);
+    } catch (\Exception $e) {
+        return back()->with('error', 'Ocurrió un error: ' . $e->getMessage());
     }
+}
 }

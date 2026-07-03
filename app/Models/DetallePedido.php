@@ -10,6 +10,7 @@ class DetallePedido extends Model
     'pedido_id',
     'producto_id',
     'cantidad',
+    'tamano',
     'precio_unitario',
     'subtotal',
 ];

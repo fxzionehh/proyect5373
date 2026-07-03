@@ -20,7 +20,7 @@ const toggleRoles = () => {
 const permissions = computed(() => page.props.auth.permissions || [])
 const user = computed(() => page.props.auth.user || {})
 
-// Verificamos si es administrador
+
 const isAdmin = computed(() => {
     return user.value.role?.nombre?.toLowerCase() === 'administrador'
 })
@@ -33,7 +33,7 @@ const can = (perm) => {
 <template>
 <aside class="w-full md:w-64 md:min-h-screen bg-zinc-950 flex flex-row md:flex-col shadow-xl fixed bottom-0 md:static z-50 overflow-visible">
     
-    <!-- Título Dinámico -->
+
     <div class="px-6 py-7 border-b border-zinc-900 hidden md:block">
         <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
             {{ isAdmin ? 'Panel de Administrador' : 'Panel de Gestión' }}

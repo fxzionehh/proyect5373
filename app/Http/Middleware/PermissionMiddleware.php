@@ -17,14 +17,11 @@ public function handle($request, Closure $next, $permission)
 {
     $user = $request->user();
 
-    // Seguridad: Si no hay usuario o rol, bloquea
+  
     if (!$user || !$user->role) abort(403);
 
-    // Si es administrador, pasa
     if ($user->role->nombre === 'administrador') return $next($request);
 
-    // Carga los permisos y verifica
-    // Asegúrate de que la relación sea 'permissions' y el campo 'nombre'
     if (!$user->role->permissions->contains('nombre', $permission)) {
         abort(403);
     }

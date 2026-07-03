@@ -35,12 +35,12 @@ const submit = () => {
 
     <div class="flex flex-1 items-center justify-center px-4 py-12">
       
-      <!-- CARD -->
+
       <form
         @submit.prevent="submit"
         class="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl border border-gray-100"
       >
-        <!-- Título DENTRO de la tarjeta -->
+
         <div class="text-center mb-8">
           <h1 class="text-2xl font-black text-gray-900 tracking-tight">
             Gestión de Pedidos
@@ -48,7 +48,7 @@ const submit = () => {
           <p class="text-sm text-gray-500 mt-1">Ingresa tus credenciales para acceder</p>
         </div>
 
-        <!-- Campo Correo -->
+  
         <div class="mb-4">
           <label class="block mb-1.5 text-xs font-bold text-gray-500 uppercase">Correo electrónico</label>
           <input
@@ -60,7 +60,7 @@ const submit = () => {
           <p v-if="form.errors.email" class="text-red-500 text-xs mt-1">{{ form.errors.email }}</p>
         </div>
 
-        <!-- Campo Contraseña -->
+ 
         <div class="mb-6">
           <label class="block mb-1.5 text-xs font-bold text-gray-500 uppercase">Contraseña</label>
           <div class="relative">
@@ -88,6 +88,8 @@ const submit = () => {
         >
           {{ form.processing ? 'Procesando...' : 'Iniciar Sesión' }}
         </button>
+
+        
 
       </form>
     </div>

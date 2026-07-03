@@ -112,7 +112,7 @@ const update = () => {
 
             </div>
 
-            <!-- MODAL -->
+        
             <div
                 v-if="editingRole"
                 class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
@@ -121,7 +121,7 @@ const update = () => {
                     class="bg-white w-full max-w-xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
                 >
 
-                    <!-- HEADER -->
+                  
                     <div
                         class="bg-zinc-900 text-white px-5 py-4 flex justify-between items-center shrink-0"
                     >
@@ -137,13 +137,13 @@ const update = () => {
                         </button>
                     </div>
 
-                    <!-- BODY -->
+               
                     <form
                         @submit.prevent="update"
                         class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5"
                     >
 
-                        <!-- NOMBRE -->
+                     
                         <div>
                             <label
                                 class="text-[10px] font-bold text-zinc-500 uppercase"
@@ -158,7 +158,7 @@ const update = () => {
                             />
                         </div>
 
-                        <!-- PERMISOS -->
+                      
                         <div>
                             <label
                                 class="text-[10px] font-bold text-zinc-500 uppercase"
@@ -188,7 +188,7 @@ const update = () => {
                             </div>
                         </div>
 
-                        <!-- FOOTER -->
+                      
                         <div
                             class="flex flex-col sm:flex-row justify-end gap-2 pt-2"
                         >
