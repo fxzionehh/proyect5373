@@ -19,6 +19,11 @@ const productoSeleccionado = ref(null)
 
 const pedidoActualLocal = ref(props.pedidoActual || null)
 
+console.log('========== DATOS INICIALES ==========')
+console.log('pedidoActual prop:', props.pedidoActual)
+console.log('pedidoActualLocal:', pedidoActualLocal.value)
+console.log('====================================')
+
 const estadoTexto = {
     pendiente: 'Pedido solicitado',
     en_preparacion: 'Preparando tu cafe',
@@ -28,31 +33,57 @@ const estadoTexto = {
 
 
 const iniciarPolling = (id) => {
-   
+
+    console.log('Iniciando polling')
+    console.log('ID recibido:', id)
+
     if (intervalo) clearInterval(intervalo)
-    
+
     intervalo = setInterval(async () => {
         try {
+
+            console.log('Consultando:', `/pedidos/${id}`)
+
             const res = await axios.get(`/pedidos/${id}`)
+
+            console.log('Respuesta:', res.data)
+
             pedidoActualLocal.value = {
                 ...pedidoActualLocal.value,
                 estado: res.data.estado,
                 detalles: res.data.detalles
             }
+
         } catch (err) {
-            console.log('error actualizando pedido', err)
+
+            console.log('ERROR COMPLETO')
+            console.log(err)
+
+            if (err.response) {
+                console.log('Status:', err.response.status)
+                console.log('Data:', err.response.data)
+            }
+
         }
     }, 3000)
 }
 
+watch(
+    pedidoActualLocal,
+    (nuevoPedido) => {
 
-watch(pedidoActualLocal, (nuevoPedido) => {
-    if (nuevoPedido?.id) {
-        iniciarPolling(nuevoPedido.id)
-    } else {
-        if (intervalo) clearInterval(intervalo)
-    }
-}, { immediate: true })
+        console.log('Watch ejecutado')
+        console.log(nuevoPedido)
+
+        if (nuevoPedido?.id) {
+            iniciarPolling(nuevoPedido.id)
+        } else {
+            console.log('No existe ID del pedido')
+        }
+
+    },
+    { immediate: true }
+)
 
 onUnmounted(() => {
     if (intervalo) clearInterval(intervalo)
