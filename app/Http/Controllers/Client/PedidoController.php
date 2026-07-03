@@ -82,6 +82,8 @@ public function show($pedido)
     Mesa::where('id', $data['mesa_id'])->update(['estado' => 'ocupada']);
 });
 
-        return back()->with('success', 'Pedido creado correctamente');
+      return Inertia::render('TuVista', [
+    'pedidoActual' => $pedido->load('detalles.producto', 'mesa'),
+]);
     }
 }
