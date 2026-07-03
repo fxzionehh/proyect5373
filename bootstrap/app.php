@@ -25,24 +25,26 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->respond(function (Response $response, Throwable $e, Request $request) {
-            
-           
-            if (in_array($response->getStatusCode(), [403, 404, 500, 503])) {
-                return Inertia::render('Error', [
-                    'status' => $response->getStatusCode(),
-                    'message' => match ($response->getStatusCode()) {
-                        403 => 'No tienes permiso para acceder a esta sección.',
-                        404 => 'La página que buscas no existe.',
-                        500 => 'Error interno del servidor.',
-                        503 => 'Servicio no disponible.',
-                        default => 'Algo salió mal.',
-                    }
-                ])
-                ->toResponse($request)
-                ->setStatusCode($response->getStatusCode());
-            }
+       $exceptions->respond(function (Response $response, Throwable $e, Request $request) {
 
-            return $response;
-        });
+    if (
+        !$request->expectsJson() &&
+        in_array($response->getStatusCode(), [403, 404, 500, 503])
+    ) {
+        return Inertia::render('Error', [
+            'status' => $response->getStatusCode(),
+            'message' => match ($response->getStatusCode()) {
+                403 => 'No tienes permiso para acceder a esta sección.',
+                404 => 'La página que buscas no existe.',
+                500 => 'Error interno del servidor.',
+                503 => 'Servicio no disponible.',
+                default => 'Algo salió mal.',
+            }
+        ])
+        ->toResponse($request)
+        ->setStatusCode($response->getStatusCode());
+    }
+
+    return $response;
+});
     })->create();

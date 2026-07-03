@@ -90,7 +90,7 @@ const confirmar = () => {
 
     form.post('/pedidos', {
         preserveScroll: true,
-        onSuccess: (page) => {
+        onSuccess: () => {
          
             pedidoActualLocal.value = page.props.pedidoActual
 
