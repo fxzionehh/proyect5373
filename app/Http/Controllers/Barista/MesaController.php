@@ -49,6 +49,14 @@ class MesaController extends Controller
             ->latest()
             ->first();
 
+            dd([
+    'mesa_id' => $mesa->id,
+    'pedido' => Pedido::where('mesa_id', $mesa->id)
+        ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
+        ->latest()
+        ->first(),
+]);
+
         return Inertia::render('Client/Index', [
             'mesaActual'   => $mesa,
             'productos'    => $productos,
