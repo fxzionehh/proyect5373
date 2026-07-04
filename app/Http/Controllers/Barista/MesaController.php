@@ -21,43 +21,28 @@ class MesaController extends Controller
     }
 
   
-    public function show($id, Request $request)
-    {
-        $mesa = Mesa::findOrFail($id);
+   public function show($id, Request $request)
+{
+    $mesa = Mesa::findOrFail($id);
 
-   
-        if (!$request->has('token') || $request->token !== $mesa->qr_token) {
-            abort(403, 'Acceso no autorizado a la mesa');
-        }
 
-  
-        $productos = Producto::select(
-            'id', 
-            'nombre', 
-            'precio_nano', 
-            'precio_mini', 
-            'precio_normal', 
-            'precio_max', 
-            'stock'
-        )
-        ->orderBy('nombre')
-        ->get();
+    $productos = Producto::select(
+        'id','nombre','precio_nano','precio_mini','precio_normal','precio_max','stock'
+    )->orderBy('nombre')->get();
 
-        $pedidoActual = Pedido::with('detalles.producto')
-            ->where('mesa_id', $mesa->id)
-            ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
-            ->latest()
-            ->first();
+    $pedidoActual = Pedido::with('detalles.producto')
+        ->where('mesa_id', $mesa->id)
+        ->whereIn('estado', ['pendiente','en_preparacion','listo'])
+        ->latest()
+        ->first();
 
-          
-
-        return Inertia::render('Client/Index', [
-            'mesaActual'   => $mesa,
-            'productos'    => $productos,
-            'pedidoActual' => $pedidoActual,
-            'puedePedir'   => $pedidoActual ? false : true,
-        ]);
-    }
+    return Inertia::render('Client/Index', [
+        'mesaActual' => $mesa,
+        'productos' => $productos,
+        'pedidoActual' => $pedidoActual,
+        'puedePedir' => $pedidoActual ? false : true,
+    ]);
+}
 
 
     public function store(Request $request)

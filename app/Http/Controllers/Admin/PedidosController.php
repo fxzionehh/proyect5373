@@ -20,10 +20,12 @@ class PedidosController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
+   public function store(Request $request)
+{
+    try {
+
         $validated = $request->validate([
-            'mesa_id' => 'nullable|integer', 
+            'mesa_id' => 'nullable|integer',
             'nombre_cliente' => 'required|string|max:100',
             'estado' => 'required|string',
             'tipo_pedido' => 'required|string',
@@ -32,8 +34,9 @@ class PedidosController extends Controller
 
         $producto = Producto::findOrFail($validated['producto_id']);
 
-     
-        $pedido = $request->id ? Pedido::findOrFail($request->id) : new Pedido();
+        $pedido = $request->id
+            ? Pedido::findOrFail($request->id)
+            : new Pedido();
 
         $pedido->fill([
             'mesa_id' => $validated['mesa_id'],
@@ -43,7 +46,6 @@ class PedidosController extends Controller
             'total' => $producto->precio_normal,
         ])->save();
 
-      
         $pedido->detalles()->updateOrCreate(
             ['pedido_id' => $pedido->id],
             [
@@ -55,5 +57,13 @@ class PedidosController extends Controller
         );
 
         return back();
+
+    } catch (\Throwable $e) {
+        dd(
+            $e->getMessage(),
+            $e->getFile(),
+            $e->getLine()
+        );
     }
+}
 }

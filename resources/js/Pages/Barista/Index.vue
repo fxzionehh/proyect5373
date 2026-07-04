@@ -19,9 +19,7 @@ const pedidosFiltrados = computed(() => {
     return props.pedidos.filter(p => p.estado === filtroEstado.value)
 })
 
-/* =========================
-   TOAST SYSTEM (AUTO HIDE)
-========================= */
+
 watch(
     () => page.props.flash,
     (flash) => {
@@ -42,9 +40,7 @@ watch(
     { immediate: true, deep: true }
 )
 
-/* =========================
-   CAMBIAR ESTADO PEDIDO
-========================= */
+
 const cambiarEstado = (pedido, estado) => {
     router.post(`/dashboard/preparacion/${pedido.id}/estado`, { estado }, {
         preserveScroll: true,
@@ -69,7 +65,7 @@ const cambiarEstado = (pedido, estado) => {
 </script>
 
 <template>
-    <!-- TOAST -->
+
     <div
         v-if="toast"
         class="toast-fixed"
@@ -78,7 +74,6 @@ const cambiarEstado = (pedido, estado) => {
         {{ toast.message }}
     </div>
 
-    <!-- NAV -->
     <navSito />
 
     <main class="flex min-h-screen bg-zinc-100/90">
@@ -86,7 +81,7 @@ const cambiarEstado = (pedido, estado) => {
 
         <section class="flex-1 min-w-0">
 
-            <!-- FILTROS -->
+          
             <div class="mb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 bg-zinc-950/90 px-4 py-2">
 
          <div class="relative flex items-center gap-4 overflow-x-auto whitespace-nowrap pb-2 border-b border-zinc-800">
@@ -99,7 +94,7 @@ const cambiarEstado = (pedido, estado) => {
     >
         {{ estado.replace('_', ' ') }}
 
-        <!-- 🔥 LINEA ACTIVA ABAJO -->
+      
         <span
             v-if="filtroEstado === estado"
             class="absolute left-0 -bottom-[1px] w-full h-[2px] rounded-full"
@@ -118,7 +113,7 @@ const cambiarEstado = (pedido, estado) => {
 
             </div>
 
-            <!-- EMPTY -->
+          
             <div
                 v-if="pedidosFiltrados.length === 0"
                 class="bg-white border border-zinc-200 rounded-xl p-8 text-center text-sm text-zinc-400 max-w-md mx-auto mt-12 shadow-sm"
@@ -127,7 +122,7 @@ const cambiarEstado = (pedido, estado) => {
                 No hay pedidos en esta sección.
             </div>
 
-            <!-- CARDS -->
+           
             <div
                 v-else
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-4 sm:px-6 py-2"
@@ -139,7 +134,7 @@ const cambiarEstado = (pedido, estado) => {
                     class="relative overflow-hidden bg-white rounded-3xl border border-zinc-200 p-4 flex flex-col justify-between hover:shadow-xl transition"
                 >
 
-                    <!-- HEADER ESTADO -->
+                  
                     <div
                         :class="{
                             'bg-orange-400': pedido.estado === 'pendiente',
@@ -154,7 +149,7 @@ const cambiarEstado = (pedido, estado) => {
                         </p>
                     </div>
 
-                    <!-- INFO -->
+                   
                     <div class="p-2">
                         <p class="text-[11px] font-bold text-zinc-500 pt-5">
                             Pedido #{{ pedido.id }}
@@ -173,7 +168,7 @@ const cambiarEstado = (pedido, estado) => {
                         </div>
                     </div>
 
-                    <!-- CLIENTE -->
+                  
                     <div class="flex justify-between px-2 mt-2">
                         <p class="text-[10px] text-zinc-400 font-black uppercase">Cliente</p>
                         <p class="text-sm font-black text-zinc-900">
@@ -181,7 +176,7 @@ const cambiarEstado = (pedido, estado) => {
                         </p>
                     </div>
 
-                    <!-- PRODUCTOS -->
+                  
                     <div class="mt-3 space-y-1 px-2">
                         <p class="text-[10px] text-zinc-400 font-black uppercase mb-1">
                             Productos
@@ -198,7 +193,7 @@ const cambiarEstado = (pedido, estado) => {
                         </p>
                     </div>
 
-                    <!-- ACCIONES -->
+                   
                     <div class="mt-4 px-2">
 
                         <button
