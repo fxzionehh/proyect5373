@@ -6,25 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\Pedido;
 use App\Models\Producto;
 use App\Models\Mesa;
+use App\Models\Insumo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
 {
+    public function show($pedido)
+    {
+        $pedido = Pedido::with('detalles.producto', 'mesa')->find($pedido);
 
-public function show($pedido)
-{
-    $pedido = Pedido::with('detalles.producto', 'mesa')->find($pedido);
+        if (!$pedido) {
+            return response()->json([
+                'error' => 'Pedido no encontrado'
+            ], 404);
+        }
 
-    if (!$pedido) {
-        return response()->json(['error' => 'Pedido no encontrado'], 404);
+        return response()->json($pedido);
     }
 
-    return response()->json($pedido);
-}
     public function store(Request $request)
     {
-        //dd($request->all());
         $data = $request->validate([
             'mesa_id'        => ['required', 'integer', 'exists:mesas,id'],
             'nombre_cliente' => ['required', 'string', 'max:100'],
@@ -32,9 +34,12 @@ public function show($pedido)
             'tamano'         => ['required', 'in:nano,mini,normal,max'],
         ]);
 
-  
         $pedidoActivo = Pedido::where('mesa_id', $data['mesa_id'])
-            ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
+            ->whereIn('estado', [
+                'pendiente',
+                'en_preparacion',
+                'listo'
+            ])
             ->exists();
 
         if ($pedidoActivo) {
@@ -43,47 +48,46 @@ public function show($pedido)
             ]);
         }
 
-      DB::transaction(function () use ($data) {
+        DB::transaction(function () use ($data) {
 
-    $nombreVaso = 'Vaso ' . ucfirst($data['tamano']); 
-    
+            $insumo = Insumo::where('nombre', 'LIKE', "%{$data['tamano']}%")->first();
 
-    $insumo = \App\Models\Insumo::where('nombre', 'LIKE', "%{$data['tamano']}%")->first();
+            if (!$insumo) {
+                throw new \Exception("No se encontró el vaso para el tamaño {$data['tamano']}");
+            }
 
+            if ($insumo->stock <= 0) {
+                throw new \Exception("No hay stock del vaso {$data['tamano']}");
+            }
 
-    if ($insumo) {
-        $insumo->decrement('stock', 1);
-    } else {
-        throw new \Exception("No se encontró el insumo para el tamaño: " . $data['tamano']);
-    }
+            $insumo->decrement('stock', 1);
 
+            $producto = Producto::findOrFail($data['producto_id']);
 
-    $producto = Producto::findOrFail($data['producto_id']);
-    $campoPrecio = 'precio_' . $data['tamano'];
-    $precioFinal = $producto->$campoPrecio;
+            $campoPrecio = 'precio_' . $data['tamano'];
 
-    $pedido = Pedido::create([
-        'mesa_id'        => $data['mesa_id'],
-        'nombre_cliente' => $data['nombre_cliente'],
-        'estado'         => 'pendiente',
-        'total'          => $precioFinal,
-    ]);
+            $precioFinal = $producto->$campoPrecio;
 
-    $pedido->detalles()->create([
-        'producto_id'     => $producto->id,
-        'cantidad'        => 1,
-        'precio_unitario' => $precioFinal,
-        'subtotal'        => $precioFinal,
-        'tamano'          => $data['tamano'],
-    ]);
+            $pedido = Pedido::create([
+                'mesa_id'        => $data['mesa_id'],
+                'nombre_cliente' => $data['nombre_cliente'],
+                'estado'         => 'pendiente',
+                'total'          => $precioFinal,
+            ]);
 
+            $pedido->detalles()->create([
+                'producto_id'     => $producto->id,
+                'cantidad'        => 1,
+                'precio_unitario' => $precioFinal,
+                'subtotal'        => $precioFinal,
+                'tamano'          => $data['tamano'],
+            ]);
 
+            Mesa::where('id', $data['mesa_id'])->update([
+                'estado' => 'ocupada'
+            ]);
+        });
 
-    Mesa::where('id', $data['mesa_id'])->update(['estado' => 'ocupada']);
-});
-
-      return Inertia::render('TuVista', [
-    'pedidoActual' => $pedido->load('detalles.producto', 'mesa'),
-]);
+        return back()->with('success', 'Pedido creado correctamente.');
     }
 }
