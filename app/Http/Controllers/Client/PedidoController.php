@@ -25,9 +25,11 @@ class PedidoController extends Controller
         return response()->json($pedido);
     }
 
+
     public function store(Request $request)
 {
-    //dd('Entré al store');
+    try {
+
         $data = $request->validate([
             'mesa_id'        => ['required', 'integer', 'exists:mesas,id'],
             'nombre_cliente' => ['required', 'string', 'max:100'],
@@ -36,11 +38,7 @@ class PedidoController extends Controller
         ]);
 
         $pedidoActivo = Pedido::where('mesa_id', $data['mesa_id'])
-            ->whereIn('estado', [
-                'pendiente',
-                'en_preparacion',
-                'listo'
-            ])
+            ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
             ->exists();
 
         if ($pedidoActivo) {
@@ -51,14 +49,14 @@ class PedidoController extends Controller
 
         DB::transaction(function () use ($data) {
 
-            $insumo = Insumo::where('nombre', 'LIKE', "%{$data['tamano']}%")->first();
+            $insumo = \App\Models\Insumo::where('nombre', 'LIKE', "%{$data['tamano']}%")->first();
 
             if (!$insumo) {
-                throw new \Exception("No se encontró el vaso para el tamaño {$data['tamano']}");
+                throw new \Exception("No se encontró el insumo para el tamaño: " . $data['tamano']);
             }
 
             if ($insumo->stock <= 0) {
-                throw new \Exception("No hay stock del vaso {$data['tamano']}");
+                throw new \Exception("No hay stock del insumo.");
             }
 
             $insumo->decrement('stock', 1);
@@ -90,5 +88,15 @@ class PedidoController extends Controller
         });
 
         return back()->with('success', 'Pedido creado correctamente.');
+
+    } catch (\Throwable $e) {
+
+        dd([
+            'mensaje' => $e->getMessage(),
+            'archivo' => $e->getFile(),
+            'linea'   => $e->getLine(),
+            'trace'   => $e->getTraceAsString(),
+        ]);
     }
+}
 }
