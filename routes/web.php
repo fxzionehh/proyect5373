@@ -24,7 +24,8 @@ Route::post('/logout', [LoginController::class, 'destroy']);
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::get('/dashboard/pedidos', fn () => Inertia::render('Admin/Pedidos/Index'))->name('dashboard.pedidos');
+    Route::get('/', fn () => Inertia::render('Admin/Index'))
+        ->name('inicio');
 
     Route::get('/dashboard/roles', [RoleController::class, 'index'])
         ->middleware('permission:ver roles');    
