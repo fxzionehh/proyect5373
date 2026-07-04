@@ -26,7 +26,8 @@ class PedidoController extends Controller
     }
 
     public function store(Request $request)
-    {
+{
+    dd('Entré al store');
         $data = $request->validate([
             'mesa_id'        => ['required', 'integer', 'exists:mesas,id'],
             'nombre_cliente' => ['required', 'string', 'max:100'],
