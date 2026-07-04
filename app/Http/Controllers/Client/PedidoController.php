@@ -49,11 +49,18 @@ class PedidoController extends Controller
 
         DB::transaction(function () use ($data) {
 
-            $insumo = \App\Models\Insumo::where('nombre', 'LIKE', "%{$data['tamano']}%")->first();
+           $nombreVaso = match ($data['tamano']) {
+    'nano' => 'Vaso Nano 120ml',
+    'mini' => 'Vaso Mini 240ml',
+    'normal' => 'Vaso Normal 360ml',
+    'max' => 'Vaso Max 480ml',
+};
 
-            if (!$insumo) {
-                throw new \Exception("No se encontró el insumo para el tamaño: " . $data['tamano']);
-            }
+$insumo = \App\Models\Insumo::where('nombre', $nombreVaso)->first();
+
+if (!$insumo) {
+    throw new \Exception("No existe el insumo: {$nombreVaso}");
+}
 
             if ($insumo->stock <= 0) {
                 throw new \Exception("No hay stock del insumo.");
