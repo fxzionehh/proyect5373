@@ -112,7 +112,7 @@ const seleccionarProducto = (p) => {
     form.producto_id = p.id
     paso.value = 2
 }
-
+const mensajeError = ref('')
 const irNombre = () => paso.value = 3
 const volver = () => paso.value--
 
@@ -121,8 +121,9 @@ const confirmar = () => {
 
     form.post('/pedidos', {
         preserveScroll: true,
+
         onSuccess: (page) => {
-         
+
             pedidoActualLocal.value = page.props.pedidoActual
 
             paso.value = 1
@@ -130,9 +131,18 @@ const confirmar = () => {
             form.reset()
             form.tamano = null
             form.producto_id = null
-        }
+        },
+
+       onError: (errors) => {
+
+    if (errors.pedido) {
+        mensajeError.value = errors.pedido
+    }
+}
     })
 }
+
+
 </script>
 
 <template>
@@ -156,6 +166,13 @@ const confirmar = () => {
                     {{ estadoTexto[pedidoActualLocal.estado] }}
                 </div>
             </header>
+
+            <div
+    v-if="mensajeError"
+    class="mx-6 mt-4 bg-red-600 text-white rounded-xl p-4 font-bold"
+>
+    {{ mensajeError }}
+</div>
 
             <div v-if="paso === 1" class="p-6 animate-in slide-in-from-bottom-10">
                 <h2 class="text-2xl font-black uppercase italic text-zinc-500 mb-6">
