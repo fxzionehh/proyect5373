@@ -19,10 +19,6 @@ const productoSeleccionado = ref(null)
 
 const pedidoActualLocal = ref(props.pedidoActual || null)
 
-console.log('========== DATOS INICIALES ==========')
-console.log('pedidoActual prop:', props.pedidoActual)
-console.log('pedidoActualLocal:', pedidoActualLocal.value)
-console.log('====================================')
 
 const estadoTexto = {
     pendiente: 'Pedido solicitado',
@@ -34,8 +30,7 @@ const estadoTexto = {
 
 const iniciarPolling = (id) => {
 
-    console.log('Iniciando polling')
-    console.log('ID recibido:', id)
+
 
     if (intervalo) clearInterval(intervalo)
 

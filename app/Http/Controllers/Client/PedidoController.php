@@ -38,17 +38,15 @@ class PedidoController extends Controller
 
             DB::transaction(function () use ($data) {
 
-                // Bloquea la mesa mientras se crea el pedido
+               
                 $mesa = Mesa::where('id', $data['mesa_id'])
                     ->lockForUpdate()
                     ->firstOrFail();
 
-                // Si ya está ocupada, no permite otro pedido
                 if ($mesa->estado === 'ocupada') {
                     throw new \Exception('Esta mesa ya tiene un pedido activo.');
                 }
-
-                // Obtener el vaso correspondiente
+               
                 $nombreVaso = match ($data['tamano']) {
                     'nano'   => 'Vaso Nano 120ml',
                     'mini'   => 'Vaso Mini 240ml',
@@ -66,17 +64,16 @@ class PedidoController extends Controller
                     throw new \Exception("No hay stock de {$nombreVaso}");
                 }
 
-                // Descontar un vaso
+             
                 $insumo->decrement('stock', 1);
-
-                // Obtener producto
+               
                 $producto = Producto::findOrFail($data['producto_id']);
 
                 $campoPrecio = 'precio_' . $data['tamano'];
 
                 $precioFinal = $producto->$campoPrecio;
 
-                // Crear pedido
+              
                 $pedido = Pedido::create([
                     'mesa_id'        => $mesa->id,
                     'nombre_cliente' => $data['nombre_cliente'],
@@ -84,7 +81,7 @@ class PedidoController extends Controller
                     'total'          => $precioFinal,
                 ]);
 
-                // Crear detalle
+               
                 $pedido->detalles()->create([
                     'producto_id'     => $producto->id,
                     'cantidad'        => 1,
@@ -93,7 +90,7 @@ class PedidoController extends Controller
                     'tamano'          => $data['tamano'],
                 ]);
 
-                // Marcar mesa ocupada
+         
                 $mesa->estado = 'ocupada';
                 $mesa->save();
             });

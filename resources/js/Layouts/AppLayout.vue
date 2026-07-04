@@ -36,7 +36,7 @@ const can = (perm) => {
 
     <div class="px-6 py-7 border-b border-zinc-900 hidden md:block">
         <p class="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-            {{ isAdmin ? 'Panel de Administrador' : 'Panel de Gestión' }}
+            {{ isAdmin ? 'Panel de Administrador' : 'Panel de Barista' }}
         </p>
         <p class="text-sm font-semibold text-white mt-1 truncate">
             {{ user.name || 'Bienvenido' }}
