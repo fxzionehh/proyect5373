@@ -77,9 +77,11 @@ class MesaController extends Controller
     }
 
 
-    public function destroy(Mesa $mesa)
-    {
-        $mesa->delete();
-        return back();
-    }
+   public function destroy($id)
+{
+    $mesa = Mesa::findOrFail($id);
+    $mesa->delete();
+
+    return back();
+}
 }

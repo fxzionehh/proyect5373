@@ -79,11 +79,11 @@ const eliminar = (insumo) => {
             <section class="bg-white rounded-xl border border-gray-200 shadow-sm w-full overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-zinc-900 text-white text-sm uppercase tracking-wide">
+                        <thead class="bg-zinc-900 text-white text-sm">
                             <tr>
                                 <th class="px-6 py-4">Insumo</th>
                                 <th class="px-6 py-4">Stock</th>
-                                <th class="px-6 py-4 text-right">Acciones</th>
+                                <th class="px-6 py-4 text-right">Acción</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">

@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class PedidoController extends Controller
 {
-    public function show($pedido)
-    {
+    public function show($pedido){
         $pedido = Pedido::with('detalles.producto', 'mesa')->find($pedido);
 
         if (!$pedido) {

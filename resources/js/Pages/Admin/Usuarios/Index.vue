@@ -102,7 +102,7 @@ const eliminar = (id) => {
                                 <th class="px-4 py-4 text-left">ID</th>
                                 <th class="px-4 py-4 text-left">Nombre</th>
                                 <th class="px-4 py-4 text-left">Email</th>
-                                <th class="px-4 py-4 text-left">Rol</th> <th class="px-4 py-4 text-right">Acciones</th>
+                                <th class="px-4 py-4 text-left">Rol</th> <th class="px-4 py-4 text-right">Acción</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-100">

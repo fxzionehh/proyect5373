@@ -50,7 +50,8 @@ const guardar = () => {
 
 const eliminar = (id) => {
     if (confirm('¿Eliminar esta mesa?')) {
-        router.delete(`/dashboard/mesas/${id}`, { preserveScroll: true })
+        router.delete(`/dashboard/mesas/${id}`,
+         { preserveScroll: true })
     }
 }
 </script>

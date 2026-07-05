@@ -101,7 +101,7 @@ const limpiar = () => {
             <section class="bg-white rounded-xl border border-gray-200 shadow-sm w-full overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse min-w-[950px]">
-                        <thead class="bg-zinc-900 text-white text-sm uppercase tracking-wide">
+                        <thead class="bg-zinc-900 text-white text-sm  ">
                             <tr>
                                 <th class="px-6 py-4">Producto</th>
                                 <th class="px-6 py-4 text-center">Nano</th>
@@ -109,7 +109,7 @@ const limpiar = () => {
                                 <th class="px-6 py-4 text-center">Normal</th>
                                 <th class="px-6 py-4 text-center">Max</th>
                                 <th class="px-6 py-4 text-center">Stock</th>
-                                <th class="px-6 py-4 text-right">Acciones</th>
+                                <th class="px-6 py-4 text-right">Acción</th>
                             </tr>
                         </thead>
 
