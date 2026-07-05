@@ -113,4 +113,6 @@ Route::post('/pedidos', [PedidoController::class, 'store'])
 Route::get('/mesa/{mesa}', [MesaController::class, 'show'])
     ->name('mesas.show');
 
+Route::get('/pedido/{codigo}', [PedidosController::class, 'show']);
+
 Route::get('/pedidos/{pedido}', [PedidoController::class, 'show']);

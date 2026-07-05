@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pedido;
 use App\Models\Producto;
 use App\Models\Mesa;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,57 +14,66 @@ class PedidosController extends Controller
 {
     public function index()
     {
-        return Inertia::render('Admin/Pedidos/Index', [
-            'pedidos' => Pedido::with('detalles.producto')->latest()->get(),
-            'productos' => Producto::orderBy('nombre')->get(),
-            'mesas' => Mesa::orderBy('numero')->get(),
-        ]);
+      return Inertia::render('Admin/Pedidos/Index', [
+    'pedidos' => Pedido::with('detalles.producto')->latest()->get(),
+    'productos' => Producto::orderBy('nombre')->get(),
+    'mesas' => Mesa::orderBy('numero')->get(),
+    'appUrl' => config('app.url'),
+]);
     }
 
-   public function store(Request $request)
+    public function show($codigo)
 {
-    try {
+    $pedido = Pedido::with('detalles.producto')
+        ->where('codigo', $codigo)
+        ->firstOrFail();
 
-        $validated = $request->validate([
-            'mesa_id' => 'nullable|integer',
-            'nombre_cliente' => 'required|string|max:100',
-            'estado' => 'required|string',
-            'tipo_pedido' => 'required|string',
-            'producto_id' => 'required|exists:productos,id',
-        ]);
+    return Inertia::render('Admin/Pedidos/Show', [
+        'pedido' => $pedido
+    ]);
+}
 
-        $producto = Producto::findOrFail($validated['producto_id']);
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'mesa_id' => 'nullable|integer',
+        'nombre_cliente' => 'required|string|max:100',
+        'estado' => 'required|string',
+        'tipo_pedido' => 'required|string',
+        'producto_id' => 'required|exists:productos,id',
+        'tamano' => 'required|in:nano,mini,normal,max',
+    ]);
 
-        $pedido = $request->id
-            ? Pedido::findOrFail($request->id)
-            : new Pedido();
+    $producto = Producto::findOrFail($validated['producto_id']);
+    $precio = $producto->{'precio_' . $validated['tamano']};
 
-        $pedido->fill([
-            'mesa_id' => $validated['mesa_id'],
-            'nombre_cliente' => $validated['nombre_cliente'],
-            'estado' => $validated['estado'],
-            'tipo_pedido' => $validated['tipo_pedido'],
-            'total' => $producto->precio_normal,
-        ])->save();
+    $pedido = new Pedido();
 
-        $pedido->detalles()->updateOrCreate(
-            ['pedido_id' => $pedido->id],
-            [
-                'producto_id' => $producto->id,
-                'cantidad' => 1,
-                'precio_unitario' => $producto->precio_normal,
-                'subtotal' => $producto->precio_normal,
-            ]
-        );
+    // 🔥 CÓDIGO ÚNICO SEGURO
+    do {
+        $codigo = Str::upper(Str::random(10));
+    } while (Pedido::where('codigo', $codigo)->exists());
 
-        return back();
+    $pedido->codigo = $codigo;
 
-    } catch (\Throwable $e) {
-        dd(
-            $e->getMessage(),
-            $e->getFile(),
-            $e->getLine()
-        );
-    }
+    $pedido->fill([
+        'mesa_id' => $validated['mesa_id'],
+        'nombre_cliente' => $validated['nombre_cliente'],
+        'estado' => $validated['estado'],
+        'tipo_pedido' => $validated['tipo_pedido'],
+        'total' => $precio,
+    ]);
+
+    $pedido->save();
+
+    $pedido->detalles()->create([
+        'producto_id' => $producto->id,
+        'cantidad' => 1,
+        'tamano' => $validated['tamano'],
+        'precio_unitario' => $precio,
+        'subtotal' => $precio,
+    ]);
+
+    return back();
 }
 }
