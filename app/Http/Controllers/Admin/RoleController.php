@@ -66,16 +66,11 @@ class RoleController extends Controller
     }
 
 
-   public function destroy($id)
-{
-    $role = Role::find($id);
-    if (!$role) {
-        return response()->json(['message' => 'Rol no encontrado con ID: ' . $id], 404);
-    }
-    
-    $role->permissions()->detach();
-    $role->delete();
+    public function destroy(Role $role)
+    {
+        $role->permissions()->detach();
+        $role->delete();
 
-    return back();
-}
+        return back();
+    }
 }
