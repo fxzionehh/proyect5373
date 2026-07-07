@@ -64,7 +64,9 @@ const eliminar = (id) => {
 
     <div class="flex min-h-screen bg-zinc-100/90">
         <AppLayout />
-
+        <div v-if="$page.props.errors.error" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {{ $page.props.errors.error }}
+        </div>
         <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
                 <h1 class="text-3xl font-black text-zinc-900">Roles</h1>
