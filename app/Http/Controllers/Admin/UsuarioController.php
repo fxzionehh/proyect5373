@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 
@@ -40,7 +41,11 @@ class UsuarioController extends Controller
         dd($request->all());
         $validated = $request->validate([
             'name'     => 'required|string|max:100',
-            'email'    => 'required|email|unique:users,email,' . $id,
+            'email' => [
+    'required',
+    'email',
+    Rule::unique('users', 'email')->ignore($id),
+],
             'role_id'  => 'required|exists:roles,id',
             'password' => $id ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
         ]);
