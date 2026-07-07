@@ -34,39 +34,51 @@ class UsuarioController extends Controller
     }
 
   
-    public function store(Request $request)
-    {
-      
-        $id = $request->id;
-        dd($request->all());
-        $validated = $request->validate([
-            'name'     => 'required|string|max:100',
-            'email' => [
-    'required',
-    'email',
-    Rule::unique('users', 'email')->ignore($id),
-],
-            'role_id'  => 'required|exists:roles,id',
-            'password' => $id ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
-        ]);
+  public function store(Request $request)
+{
+    $id = $request->id;
 
-    
-        $usuario = $id ? User::findOrFail($id) : new User();
+    $validated = $request->validate([
+        'name' => 'required|string|max:100',
+        'email' => [
+            'required',
+            'email',
+            Rule::unique('users', 'email')->ignore($id),
+        ],
+        'role_id' => 'required|exists:roles,id',
+        'password' => $id
+            ? 'nullable|string|min:8|confirmed'
+            : 'required|string|min:8|confirmed',
+    ]);
 
-  
-        $usuario->fill($request->only(['name', 'email', 'role_id']));
+    if ($id) {
 
-       
-        if ($request->filled('password')) {
-            $usuario->password = Hash::make($request->password);
+        $usuario = User::findOrFail($id);
+
+        $usuario->name = $validated['name'];
+        $usuario->email = $validated['email'];
+        $usuario->role_id = $validated['role_id'];
+
+        if (!empty($validated['password'])) {
+            $usuario->password = Hash::make($validated['password']);
         }
 
-    
         $usuario->save();
 
-        return back()->with('message', 'Usuario guardado correctamente');
+    } else {
+
+        $usuario = new User();
+
+        $usuario->name = $validated['name'];
+        $usuario->email = $validated['email'];
+        $usuario->role_id = $validated['role_id'];
+        $usuario->password = Hash::make($validated['password']);
+
+        $usuario->save();
     }
 
+    return back();
+}
     public function destroy(User $usuario)
     {
         $usuario->delete();
