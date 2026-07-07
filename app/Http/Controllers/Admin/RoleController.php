@@ -66,11 +66,18 @@ class RoleController extends Controller
     }
 
 
-    public function destroy(Role $role)
-    {
-        $role->permissions()->detach();
-        $role->delete();
+    public function destroy($id)
+{
+    $role = Role::findOrFail($id);
 
-        return back();
+  
+    if ($role->users()->count() > 0) {
+        return back()->withErrors(['error' => 'No se puede eliminar el rol porque tiene usuarios asignados.']);
     }
+
+    $role->permissions()->detach();
+    $role->delete();
+
+    return back();
+}
 }

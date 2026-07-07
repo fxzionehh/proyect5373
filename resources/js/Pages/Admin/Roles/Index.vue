@@ -52,15 +52,9 @@ const guardar = () => {
 }
 
 const eliminar = (id) => {
-    console.log("Intentando eliminar el rol con ID:", id); // ESTO DEBE APARECER
-    
     if (!confirm('¿Seguro que deseas eliminar este rol?')) return
-    
     router.delete(`/dashboard/roles/${id}`, { 
-        preserveScroll: true,
-        onSuccess: () => console.log("Eliminado con éxito"),
-        onError: (errors) => console.error("Error al eliminar:", errors),
-        onFinish: () => console.log("Proceso de eliminación finalizado")
+        preserveScroll: true 
     })
 }
 </script>
