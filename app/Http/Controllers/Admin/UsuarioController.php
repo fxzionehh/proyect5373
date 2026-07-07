@@ -34,53 +34,33 @@ class UsuarioController extends Controller
 
   
     public function store(Request $request)
-{
-    try {
-
+    {
+      
         $id = $request->id;
-
+        dd($request->all());
         $validated = $request->validate([
             'name'     => 'required|string|max:100',
             'email'    => 'required|email|unique:users,email,' . $id,
             'role_id'  => 'required|exists:roles,id',
-            'password' => $id
-                ? 'nullable|string|min:8|confirmed'
-                : 'required|string|min:8|confirmed',
+            'password' => $id ? 'nullable|string|min:8|confirmed' : 'required|string|min:8|confirmed',
         ]);
 
+    
         $usuario = $id ? User::findOrFail($id) : new User();
 
-        $usuario->fill($request->only([
-            'name',
-            'email',
-            'role_id'
-        ]));
+  
+        $usuario->fill($request->only(['name', 'email', 'role_id']));
 
+       
         if ($request->filled('password')) {
             $usuario->password = Hash::make($request->password);
         }
 
+    
         $usuario->save();
 
         return back()->with('message', 'Usuario guardado correctamente');
-
-    } catch (\Exception $e) {
-
-        dd([
-            'mensaje' => $e->getMessage(),
-            'archivo' => $e->getFile(),
-            'linea'   => $e->getLine(),
-            'trace'   => $e->getTraceAsString(),
-        ]);
-
-        // O si prefieres devolver el error:
-        /*
-        return back()->withErrors([
-            'error' => $e->getMessage()
-        ]);
-        */
     }
-}
 
     public function destroy(User $usuario)
     {
