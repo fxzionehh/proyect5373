@@ -37,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/dashboard/roles/store', [RoleController::class, 'store'])
         ->middleware('permission:actualizar rol');
 
-    Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+    Route::delete('/dashboard/roles/{role}', [RoleController::class, 'destroy'])
         ->middleware('permission:eliminar rol');
 
     Route::get('/dashboard/usuarios', [UsuarioController::class, 'index']);
