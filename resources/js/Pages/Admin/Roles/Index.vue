@@ -50,6 +50,13 @@ const guardar = () => {
         onSuccess: () => cerrarModal()
     })
 }
+
+const eliminar = (id) => {
+    if (!confirm('¿Seguro que deseas eliminar este rol?')) return
+    router.delete(`/dashboard/roles/${id}`, { 
+        preserveScroll: true 
+    })
+}
 </script>
 
 <template>
@@ -87,9 +94,12 @@ const guardar = () => {
                                         </span>
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 text-right">
+                                <td class="px-4 py-4 text-right flex justify-end gap-2">
                                     <button @click="abrirEditar(rol)" class="px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-600 transition">
                                         Editar
+                                    </button>
+                                    <button @click="eliminar(rol.id)" class="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition">
+                                        Eliminar
                                     </button>
                                 </td>
                             </tr>

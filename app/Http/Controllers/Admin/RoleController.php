@@ -33,44 +33,29 @@ class RoleController extends Controller
         return response()->json($role);
     }
 
-  
-    public function store(Request $request)
-    {
-        $id = $request->id;
+  public function store(Request $request)
+{
+    $validated = $request->validate([
+        'nombre' => 'required|string|max:100',
+        'permissions' => 'nullable|array',
+    ]);
 
-        $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
-            'permissions' => 'nullable|array',
-        ]);
+    $role = Role::updateOrCreate(
+        ['id' => $request->id],
+        ['nombre' => $validated['nombre']]
+    );
 
-        if ($id) {
-          
-            $role = Role::findOrFail($id);
+    $role->permissions()->sync($request->permissions ?? []);
 
-            $role->nombre = $validated['nombre'];
-            $role->save();
-        } else {
-         
-            $role = new Role();
+    return back();
+}
 
-            $role->nombre = $validated['nombre'];
-            $role->save();
-        }
+public function destroy($id)
+{
+    $role = Role::findOrFail($id);
+    $role->permissions()->detach();
+    $role->delete();
 
-      
-        $role->permissions()->sync(
-            $request->permissions ?? []
-        );
-
-        return back();
-    }
-
-
-    public function destroy(Role $role)
-    {
-        $role->permissions()->detach();
-        $role->delete();
-
-        return back();
-    }
+    return back();
+}
 }
