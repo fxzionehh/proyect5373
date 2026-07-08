@@ -180,7 +180,7 @@ const guardar = () => {
                         <input v-model="form.nombre_cliente" placeholder="Ingrese el nombre del cliente"
                             class="w-full rounded-xl border border-zinc-300 p-3 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none" />
 
-                        <p v-if="form.errors.nombre_cliente" class="text-red-500 text-xs mt-1">
+                        <p v-if="form.errors.nombre_cliente" class="text-red-500 text-[10px] font-bold mt-1">
                             {{ form.errors.nombre_cliente }}
                         </p>
                     </div>
@@ -218,7 +218,7 @@ const guardar = () => {
 
                         </select>
 
-                        <p v-if="form.errors.producto_id" class="text-red-500 text-xs mt-1">
+                        <p v-if="form.errors.producto_id" class="text-red-500 text-[10px] font-bold mt-1">
                             {{ form.errors.producto_id }}
                         </p>
                     </div>
@@ -240,7 +240,7 @@ const guardar = () => {
                             <option value="max">🧋 Max</option>
                         </select>
 
-                        <p v-if="form.errors.tamano" class="text-red-500 text-xs mt-1">
+                        <p v-if="form.errors.tamano" class="text-red-500 text-[10px] font-bold mt-1">
                             {{ form.errors.tamano }}
                         </p>
                     </div>

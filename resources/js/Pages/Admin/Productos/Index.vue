@@ -204,7 +204,7 @@ const limpiar = () => {
                     v-model="form.nombre"
                     type="text"
                     placeholder="Ej: Cappuccino"
-                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                    class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none"
                 />
                 <div v-if="form.errors.nombre" class="text-red-500 text-[10px] font-bold mt-1">
                     {{ form.errors.nombre }}
@@ -219,7 +219,7 @@ const limpiar = () => {
                     <input
                         v-model="form.precio_nano"
                         type="number"
-                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                        class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none"
                     />
                     <div v-if="form.errors.precio_nano" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_nano }}
@@ -231,7 +231,7 @@ const limpiar = () => {
                     <input
                         v-model="form.precio_mini"
                         type="number"
-                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                        class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none"
                     />
                     <div v-if="form.errors.precio_mini" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_mini }}
@@ -243,7 +243,7 @@ const limpiar = () => {
                     <input
                         v-model="form.precio_normal"
                         type="number"
-                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                        class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none"
                     />
                     <div v-if="form.errors.precio_normal" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_normal }}
@@ -255,7 +255,7 @@ const limpiar = () => {
                     <input
                         v-model="form.precio_max"
                         type="number"
-                        class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                        class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none"
                     />
                     <div v-if="form.errors.precio_max" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_max }}
@@ -270,7 +270,7 @@ const limpiar = () => {
                 <input
                     v-model="form.stock"
                     type="number"
-                    class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
+                    class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none"
                 />
                 <div v-if="form.errors.stock" class="text-red-500 text-[10px] font-bold mt-1">
                     {{ form.errors.stock }}

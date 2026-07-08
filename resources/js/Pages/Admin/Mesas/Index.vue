@@ -65,7 +65,7 @@ const eliminar = (id) => {
         <main class="flex-1 w-full p-8">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
                 <h1 class="text-3xl font-black text-zinc-900">Mesas</h1>
-                <button @click="abrirCrear" class="w-full sm:w-auto bg-amber-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-amber-600 transition">
+                <button @click="abrirCrear" class="flex items-center gap-2 bg-amber-500 text-white px-4 py-1.5 rounded-lg font-semibold hover:bg-amber-600 transition-all shadow-sm text-sm">
                     + Nueva Mesa
                 </button>
             </div>
