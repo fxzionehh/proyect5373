@@ -114,7 +114,7 @@ const eliminar = (id) => {
                 <div>
                     <label class="text-[10px] font-bold text-zinc-500 uppercase">Número de mesa</label>
                     <input v-model="form.numero" type="number" class="w-full mt-1 border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-amber-500" :class="{'border-red-500': form.errors.numero}" />
-                    <p v-if="form.errors.numero" class="text-xs text-red-500 mt-1">{{ form.errors.numero }}</p>
+                    <p v-if="form.errors.numero" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.numero }}</p>
                 </div>
 
                 <div class="flex justify-end gap-2 pt-2 border-t">

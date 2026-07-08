@@ -206,7 +206,7 @@ const limpiar = () => {
                     placeholder="Ej: Cappuccino"
                     class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                 />
-                <div v-if="form.errors.nombre" class="text-red-500 text-sm mt-1">
+                <div v-if="form.errors.nombre" class="text-red-500 text-[10px] font-bold mt-1">
                     {{ form.errors.nombre }}
                 </div>
             </div>
@@ -221,7 +221,7 @@ const limpiar = () => {
                         type="number"
                         class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                     />
-                    <div v-if="form.errors.precio_nano" class="text-red-500 text-sm mt-1">
+                    <div v-if="form.errors.precio_nano" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_nano }}
                     </div>
                 </div>
@@ -233,7 +233,7 @@ const limpiar = () => {
                         type="number"
                         class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                     />
-                    <div v-if="form.errors.precio_mini" class="text-red-500 text-sm mt-1">
+                    <div v-if="form.errors.precio_mini" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_mini }}
                     </div>
                 </div>
@@ -245,7 +245,7 @@ const limpiar = () => {
                         type="number"
                         class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                     />
-                    <div v-if="form.errors.precio_normal" class="text-red-500 text-sm mt-1">
+                    <div v-if="form.errors.precio_normal" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_normal }}
                     </div>
                 </div>
@@ -257,7 +257,7 @@ const limpiar = () => {
                         type="number"
                         class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                     />
-                    <div v-if="form.errors.precio_max" class="text-red-500 text-sm mt-1">
+                    <div v-if="form.errors.precio_max" class="text-red-500 text-[10px] font-bold mt-1">
                         {{ form.errors.precio_max }}
                     </div>
                 </div>
@@ -272,7 +272,7 @@ const limpiar = () => {
                     type="number"
                     class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                 />
-                <div v-if="form.errors.stock" class="text-red-500 text-sm mt-1">
+                <div v-if="form.errors.stock" class="text-red-500 text-[10px] font-bold mt-1">
                     {{ form.errors.stock }}
                 </div>
             </div>
