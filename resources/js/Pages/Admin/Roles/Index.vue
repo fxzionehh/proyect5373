@@ -65,7 +65,7 @@ const eliminar = (id) => {
     <div class="flex min-h-screen bg-zinc-100/90">
         <AppLayout />
 
-        <div class="fixed top-20 right-5 z-50 space-y-2">
+        <div class="fixed bottom-20 right-5 z-50 space-y-2">
             <div v-if="$page.props.flash?.success" class="p-4 bg-emerald-500 text-white rounded-lg shadow-xl">
                 {{ $page.props.flash.success }}
             </div>

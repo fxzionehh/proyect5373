@@ -239,7 +239,7 @@ const cambiarEstado = (pedido, estado) => {
 <style scoped>
 .toast-fixed {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
     z-index: 9999;
     padding: 1rem 1.5rem;
