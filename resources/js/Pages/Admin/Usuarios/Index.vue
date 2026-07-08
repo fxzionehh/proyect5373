@@ -139,42 +139,46 @@ const eliminar = (id) => {
                 <button @click="cerrarModal" class="text-white/70 hover:text-white">✕</button>
             </div>
 
-            <form @submit.prevent="guardar" autocomplete="off" class="p-4 space-y-3">
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Nombre</label>
-                    <input v-model="form.name" type="text" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.name}" />
-                </div>
+          <form @submit.prevent="guardar" autocomplete="off" class="p-4 space-y-3">
+    <div>
+        <label class="text-[10px] font-bold text-zinc-500 uppercase">Nombre</label>
+        <input v-model="form.name" type="text" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.name}" />
+        <div v-if="form.errors.name" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.name }}</div>
+    </div>
 
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Email</label>
-                    <input v-model="form.email" type="email" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.email}" />
-                </div>
+    <div>
+        <label class="text-[10px] font-bold text-zinc-500 uppercase">Email</label>
+        <input v-model="form.email" type="email" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.email}" />
+        <div v-if="form.errors.email" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.email }}</div>
+    </div>
 
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Rol</label>
-                    <select v-model="form.role_id" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.role_id}">
-                        <option value="" disabled>Seleccione un rol</option>
-                        <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.nombre }}</option>
-                    </select>
-                </div>
+    <div>
+        <label class="text-[10px] font-bold text-zinc-500 uppercase">Rol</label>
+        <select v-model="form.role_id" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.role_id}">
+            <option value="" disabled>Seleccione un rol</option>
+            <option v-for="rol in roles" :key="rol.id" :value="rol.id">{{ rol.nombre }}</option>
+        </select>
+        <div v-if="form.errors.role_id" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.role_id }}</div>
+    </div>
 
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Contraseña</label>
-                    <input v-model="form.password" type="password" autocomplete="new-password" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" />
-                </div>
+    <div>
+        <label class="text-[10px] font-bold text-zinc-500 uppercase">Contraseña</label>
+        <input v-model="form.password" type="password" autocomplete="new-password" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.password}" />
+        <div v-if="form.errors.password" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.password }}</div>
+    </div>
 
-                <div>
-                    <label class="text-[10px] font-bold text-zinc-500 uppercase">Confirmar contraseña</label>
-                    <input v-model="form.password_confirmation" type="password" autocomplete="new-password" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" />
-                </div>
+    <div>
+        <label class="text-[10px] font-bold text-zinc-500 uppercase">Confirmar contraseña</label>
+        <input v-model="form.password_confirmation" type="password" autocomplete="new-password" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" />
+    </div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t mt-3">
-                    <button type="button" @click="cerrarModal" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100">Cancelar</button>
-                    <button type="submit" :disabled="form.processing" class="px-4 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-semibold disabled:opacity-50">
-                        {{ form.processing ? 'Guardando...' : 'Guardar' }}
-                    </button>
-                </div>
-            </form>
+    <div class="flex justify-end gap-2 pt-2 border-t mt-3">
+        <button type="button" @click="cerrarModal" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100">Cancelar</button>
+        <button type="submit" :disabled="form.processing" class="px-4 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 font-semibold disabled:opacity-50">
+            {{ form.processing ? 'Guardando...' : 'Guardar' }}
+        </button>
+    </div>
+</form>
         </div>
     </div>
 </template>
