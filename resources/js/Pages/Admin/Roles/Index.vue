@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue'
-import { useForm, router } from '@inertiajs/vue3'
+import { ref, watch } from 'vue'
+import { useForm, router, usePage } from '@inertiajs/vue3'
 import navSito from '@/Components/Nav.vue'
 import AppLayout from '@/Layouts/AppLayout.vue'
 
@@ -9,10 +9,30 @@ const props = defineProps({
     allPermissions: Array
 })
 
+const page = usePage()
+const toast = ref(null)
 const modalAbierto = ref(false)
 const editando = ref(false)
 
-// Configuración del formulario
+// Lógica de Notificaciones Automáticas
+watch(
+    () => page.props,
+    (props) => {
+        if (props.errors?.error) {
+            toast.value = { type: 'error', message: props.errors.error }
+        } else if (props.flash?.success) {
+            toast.value = { type: 'success', message: props.flash.success }
+        }
+
+        if (toast.value) {
+            setTimeout(() => {
+                toast.value = null
+            }, 4000)
+        }
+    },
+    { deep: true }
+)
+
 const form = useForm({
     id: null,
     nombre: '',
@@ -60,19 +80,16 @@ const eliminar = (id) => {
 </script>
 
 <template>
+    <div v-if="toast" 
+         class="fixed bottom-10 right-5 z-[9999] p-4 text-white rounded-lg shadow-xl animate-fade-in font-bold text-sm"
+         :class="toast.type === 'error' ? 'bg-red-600' : 'bg-emerald-600'">
+        {{ toast.message }}
+    </div>
+
     <navSito />
 
     <div class="flex min-h-screen bg-zinc-100/90">
         <AppLayout />
-
-        <div class="fixed bottom-20 right-5 z-50 space-y-2">
-            <div v-if="$page.props.flash?.success" class="p-4 bg-emerald-500 text-white rounded-lg shadow-xl">
-                {{ $page.props.flash.success }}
-            </div>
-            <div v-if="$page.props.errors.error" class="p-4 bg-red-500 text-white rounded-lg shadow-xl">
-                {{ $page.props.errors.error }}
-            </div>
-        </div>
 
         <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
@@ -154,3 +171,13 @@ const eliminar = (id) => {
         </div>
     </div>
 </template>
+
+<style scoped>
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+}
+</style>
