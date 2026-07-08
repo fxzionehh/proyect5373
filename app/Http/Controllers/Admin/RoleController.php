@@ -10,7 +10,6 @@ use Inertia\Inertia;
 
 class RoleController extends Controller
 {
-
     public function index()
     {
         return Inertia::render('Admin/Roles/Index', [
@@ -19,65 +18,35 @@ class RoleController extends Controller
         ]);
     }
 
-
-    public function edit($id)
-    {
-        $role = Role::with('permissions')->find($id);
-
-        if (!$role) {
-            return response()->json([
-                'error' => 'No encontrado',
-            ], 404);
-        }
-
-        return response()->json($role);
-    }
-
-  
     public function store(Request $request)
     {
-        $id = $request->id;
-
         $validated = $request->validate([
-            'nombre' => 'required|string|max:100',
+            'nombre' => 'required|string|max:100|unique:roles,nombre,' . ($request->id ?? 'NULL'),
             'permissions' => 'nullable|array',
         ]);
 
-        if ($id) {
-          
-            $role = Role::findOrFail($id);
-
-            $role->nombre = $validated['nombre'];
-            $role->save();
-        } else {
-         
-            $role = new Role();
-
-            $role->nombre = $validated['nombre'];
-            $role->save();
-        }
-
-      
-        $role->permissions()->sync(
-            $request->permissions ?? []
+        $role = Role::updateOrCreate(
+            ['id' => $request->id],
+            ['nombre' => $validated['nombre']]
         );
 
-        return back();
-    }
+        $role->permissions()->sync($request->permissions ?? []);
 
+        $mensaje = $request->id ? 'Rol actualizado exitosamente' : 'Rol creado exitosamente';
+        return back()->with('success', $mensaje);
+    }
 
     public function destroy($id)
-{
-    $role = Role::findOrFail($id);
+    {
+        $role = Role::findOrFail($id);
 
-  
-    if ($role->users()->count() > 0) {
-        return back()->withErrors(['error' => 'No se puede eliminar el rol porque tiene usuarios asignados.']);
+        if ($role->users()->count() > 0) {
+            return back()->withErrors(['error' => 'No se puede eliminar este rol porque tiene usuarios asignados.']);
+        }
+
+        $role->permissions()->detach();
+        $role->delete();
+
+        return back()->with('success', 'Rol eliminado correctamente');
     }
-
-    $role->permissions()->detach();
-    $role->delete();
-
-    return back();
-}
 }

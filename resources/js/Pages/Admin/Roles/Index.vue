@@ -9,10 +9,10 @@ const props = defineProps({
     allPermissions: Array
 })
 
-// Estados para el Modal estilo Usuario
 const modalAbierto = ref(false)
 const editando = ref(false)
 
+// Configuración del formulario
 const form = useForm({
     id: null,
     nombre: '',
@@ -64,9 +64,16 @@ const eliminar = (id) => {
 
     <div class="flex min-h-screen bg-zinc-100/90">
         <AppLayout />
-        <div v-if="$page.props.errors.error" class="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-            {{ $page.props.errors.error }}
+
+        <div class="fixed top-20 right-5 z-50 space-y-2">
+            <div v-if="$page.props.flash?.success" class="p-4 bg-emerald-500 text-white rounded-lg shadow-xl">
+                {{ $page.props.flash.success }}
+            </div>
+            <div v-if="$page.props.errors.error" class="p-4 bg-red-500 text-white rounded-lg shadow-xl">
+                {{ $page.props.errors.error }}
+            </div>
         </div>
+
         <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
                 <h1 class="text-3xl font-black text-zinc-900">Roles</h1>
@@ -97,12 +104,8 @@ const eliminar = (id) => {
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 text-right flex justify-end gap-2">
-                                    <button @click="abrirEditar(rol)" class="px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-600 transition">
-                                        Editar
-                                    </button>
-                                    <button @click="eliminar(rol.id)" class="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition">
-                                        Eliminar
-                                    </button>
+                                    <button @click="abrirEditar(rol)" class="px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-600 transition">Editar</button>
+                                    <button @click="eliminar(rol.id)" class="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-600 transition">Eliminar</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -122,7 +125,13 @@ const eliminar = (id) => {
             <form @submit.prevent="guardar" class="p-5 space-y-4">
                 <div>
                     <label class="text-[10px] font-bold text-zinc-500 uppercase">Nombre del rol</label>
-                    <input v-model="form.nombre" type="text" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" />
+                    <input 
+                        v-model="form.nombre" 
+                        type="text" 
+                        :class="form.errors.nombre ? 'border-red-500' : 'border-zinc-300'"
+                        class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" 
+                    />
+                    <div v-if="form.errors.nombre" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.nombre }}</div>
                 </div>
 
                 <div>
