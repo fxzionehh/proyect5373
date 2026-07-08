@@ -113,7 +113,7 @@ const eliminar = (id) => {
             <form @submit.prevent="guardar" class="p-6 space-y-4">
                 <div>
                     <label class="text-[10px] font-bold text-zinc-500 uppercase">Número de mesa</label>
-                    <input v-model="form.numero" type="number" class="w-full mt-1 border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-amber-500" :class="{'border-red-500': form.errors.numero}" />
+                    <input v-model="form.numero" type="number" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.numero}" />
                     <p v-if="form.errors.numero" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.numero }}</p>
                 </div>
 

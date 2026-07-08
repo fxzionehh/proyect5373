@@ -114,13 +114,13 @@ const eliminar = (insumo) => {
             <form @submit.prevent="guardar" class="p-6 space-y-4">
                 <div>
                     <label class="text-[10px] font-bold text-zinc-500 uppercase">Nombre</label>
-                    <input v-model="form.nombre" type="text" class="w-full mt-1 border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-amber-500" :class="{'border-red-500': form.errors.nombre}" />
+                    <input v-model="form.nombre" type="text" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.nombre}" />
                     <p v-if="form.errors.nombre" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.nombre }}</p>
                 </div>
                 
                 <div>
                     <label class="text-[10px] font-bold text-zinc-500 uppercase">Stock</label>
-                    <input v-model="form.stock" type="number" class="w-full mt-1 border rounded-lg p-2.5 text-sm outline-none focus:ring-1 focus:ring-amber-500" :class="{'border-red-500': form.errors.stock}" />
+                    <input v-model="form.stock" type="number" class="w-full mt-1 px-3 py-2 text-sm border rounded-lg focus:ring-1 focus:ring-amber-500 outline-none" :class="{'border-red-500': form.errors.stock}" />
                     <p v-if="form.errors.stock" class="text-red-500 text-[10px] font-bold mt-1">{{ form.errors.stock }}</p>
                 </div>
 
