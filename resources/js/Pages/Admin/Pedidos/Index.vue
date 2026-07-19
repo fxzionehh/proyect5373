@@ -29,15 +29,23 @@ const form = useForm({
 const exportarExcel = () => {
     const data = props.pedidos.map(p => ({
         ID: p.id,
-        Mesa: p.mesa_id ? `Mesa ${p.mesa_id}` : 'N/A',
+        Mesa: p.mesa_id ? `Mesa ${p.mesa_id}` : 'Sin mesa',
         Cliente: p.nombre_cliente,
+        Producto: p.detalles?.[0]?.producto?.nombre || 'Sin producto',
+        Vaso: p.detalles?.[0]?.tamano || 'N/A',
         Estado: p.estado,
         Origen: p.tipo_pedido,
+        Fecha: new Date(p.created_at).toLocaleDateString('es-CL'),
+        Hora: new Date(p.created_at).toLocaleTimeString('es-CL', {
+            hour: '2-digit',
+            minute: '2-digit'
+        }),
         Total: p.total
     }))
 
     const worksheet = XLSX.utils.json_to_sheet(data)
     const workbook = XLSX.utils.book_new()
+
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Pedidos')
     XLSX.writeFile(workbook, 'pedidos.xlsx')
 }
@@ -126,24 +134,24 @@ const guardar = () => {
                                 </td>
                         
 
-<td class="px-6 py-4 capitalize">
-    {{ p.tipo_pedido }}
-</td>
+                        <td class="px-6 py-4 capitalize">
+                            {{ p.tipo_pedido }}
+                        </td>
 
-<td class="px-6 py-4 whitespace-nowrap">
-    <div class="flex flex-col leading-tight">
-        <span class="font-medium">
-            {{ new Date(p.created_at).toLocaleDateString('es-CL') }}
-        </span>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex flex-col leading-tight">
+                                <span class="font-medium">
+                                    {{ new Date(p.created_at).toLocaleDateString('es-CL') }}
+                                </span>
 
-        <span class="text-xs leading-tight ">
-            {{ new Date(p.created_at).toLocaleTimeString('es-CL', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }) }}
-        </span>
-    </div>
-</td>
+                                <span class="text-xs leading-tight ">
+                                    {{ new Date(p.created_at).toLocaleTimeString('es-CL', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    }) }}
+                                </span>
+                            </div>
+                        </td>
                                 <td class="px-6 py-4">
                                     <QrcodeVue
                                     :value="`${urlBase}/pedido/${p.codigo}`"
@@ -171,7 +179,7 @@ const guardar = () => {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-                    <!-- Cliente -->
+                    
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-zinc-700 mb-1">
                             Nombre del cliente
@@ -185,7 +193,7 @@ const guardar = () => {
                         </p>
                     </div>
 
-                    <!-- Mesa -->
+                    
                     <div>
                         <label class="block text-sm font-semibold text-zinc-700 mb-1">
                             Mesa
@@ -202,7 +210,7 @@ const guardar = () => {
                         </select>
                     </div>
 
-                    <!-- Producto -->
+                    
                     <div>
                         <label class="block text-sm font-semibold text-zinc-700 mb-1">
                             Producto
@@ -224,7 +232,7 @@ const guardar = () => {
                     </div>
 
 
-                    <!-- Tamaño del vaso -->
+                    
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-zinc-700 mb-1">
                             Tamaño del vaso
@@ -244,7 +252,7 @@ const guardar = () => {
                             {{ form.errors.tamano }}
                         </p>
                     </div>
-                    <!-- Tipo -->
+                    
                     <div class="md:col-span-2">
                         <label class="block text-sm font-semibold text-zinc-700 mb-1">
                             Origen del pedido
