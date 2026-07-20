@@ -9,10 +9,27 @@ return new class extends Migration
    public function up(): void
 {
    Schema::create('mesas', function (Blueprint $table) {
+
     $table->id();
+
     $table->integer('numero')->unique();
-    $table->enum('estado', ['libre', 'ocupada', 'atendiendo'])->default('libre');
-    $table->string('qr_token')->unique()->nullable();
+
+    $table->enum('estado', [
+        'libre',
+        'ocupada',
+        'atendiendo'
+    ])->default('libre');
+
+  
+    $table->string('qr_token')
+        ->unique()
+        ->nullable();
+
+ 
+    $table->string('cliente_token')
+        ->nullable()
+        ->unique();
+
     $table->timestamps();
 });
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Mesa;
 use App\Models\Producto;
 use App\Models\Pedido;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -21,22 +22,92 @@ class MesaController extends Controller
     }
 
     
-    public function show($id, Request $request)
+  public function show($id, Request $request)
 {
     $mesa = Mesa::findOrFail($id);
 
 
-    if(!$request->token || $request->token !== $mesa->qr_token){
+    // validar QR de la mesa
+    if(
+        !$request->token ||
+        $request->token !== $mesa->qr_token
+    ){
         abort(403,'QR inválido');
     }
 
 
-    $pedidoActual = Pedido::where('mesa_id',$mesa->id)
+
+    $clienteToken = Cookie::get('cliente_token');
+
+
+    $puedePedir = false;
+    $mesaOcupada = false;
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | PRIMER CLIENTE QUE ENTRA
+    |--------------------------------------------------------------------------
+    */
+
+    if(!$mesa->cliente_token){
+
+        $nuevoToken = Str::random(40);
+
+
+        $mesa->cliente_token = $nuevoToken;
+        $mesa->estado = 'ocupada';
+        $mesa->save();
+
+
+        $clienteToken = $nuevoToken;
+
+
+        $puedePedir = true;
+
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLIENTE DUEÑO DE LA MESA
+    |--------------------------------------------------------------------------
+    */
+
+    elseif($mesa->cliente_token === $clienteToken){
+
+
+        $puedePedir = true;
+
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | OTRO CLIENTE
+    |--------------------------------------------------------------------------
+    */
+
+    else{
+
+        $mesaOcupada = true;
+
+    }
+
+
+
+
+    $pedidoActual = Pedido::with('detalles.producto')
+        ->where('mesa_id',$mesa->id)
         ->whereIn('estado',[
             'pendiente',
             'en_preparacion',
             'listo'
         ])
+        ->latest()
         ->first();
 
 
@@ -49,14 +120,21 @@ class MesaController extends Controller
 
         'pedidoActual'=>$pedidoActual,
 
-        // puede pedir solo si no hay pedido
-        'puedePedir'=>$pedidoActual === null,
 
-        'mesaOcupada'=>$pedidoActual !== null
+        'puedePedir'=>$puedePedir,
 
-    ]);
+        'mesaOcupada'=>$mesaOcupada
+
+    ])
+    ->withCookie(
+        cookie(
+            'cliente_token',
+            $clienteToken,
+            60*24
+        )
+    );
+
 }
-    }
 
     public function store(Request $request)
     {
