@@ -207,7 +207,7 @@ const confirmar = () => {
         p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50'
     ]"
     class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
->
+></button>
                 </div>
             </div>
 
