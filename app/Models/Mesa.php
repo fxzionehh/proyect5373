@@ -7,15 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Mesa extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
-    protected $fillable = ['numero', 'estado', 'qr_token'];
+    protected $fillable = [
+        'numero',
+        'estado',
+        'qr_token',
+        'cliente_token'
+    ];
 
-   
+
     public function getRouteKeyName()
     {
         return 'qr_token';
     }
+
 
     public function pedidos()
     {
