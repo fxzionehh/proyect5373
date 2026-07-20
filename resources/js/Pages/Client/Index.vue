@@ -195,17 +195,36 @@ const confirmar = () => {
                 </h2>
                 
                 <div class="grid grid-cols-2 gap-4">
-                    <button 
+                  <button 
     v-for="p in productos"
     :key="p.id"
     @click="seleccionarProducto(p)"
     :disabled="!puedePedir || pedidoActualLocal !== null"
     :class="[
         !puedePedir ? 'opacity-40 cursor-not-allowed' : '',
-        p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50'
+        p.stock > 0 
+        ? 'bg-zinc-900 border-zinc-800' 
+        : 'bg-zinc-900/50 border-zinc-900 opacity-50'
     ]"
     class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
-></button>
+>
+
+    <div class="w-12 h-12 bg-black rounded-full flex items-center justify-center mb-4">
+        ☕
+    </div>
+
+    <h3 class="font-black text-sm uppercase">
+        {{ p.nombre }}
+    </h3>
+
+    <p class="text-[10px] text-zinc-500 mt-1 uppercase">
+        {{ p.stock > 0 
+            ? `Desde $${Number(p.precio_nano).toLocaleString('es-CL')}` 
+            : 'Agotado'
+        }}
+    </p>
+
+</button>
                 </div>
             </div>
 
