@@ -22,83 +22,40 @@ class MesaController extends Controller
 
     
     public function show($id, Request $request)
-    {
-        $mesa = Mesa::findOrFail($id);
+{
+    $mesa = Mesa::findOrFail($id);
 
 
-       
-        if (!$request->token || $request->token !== $mesa->qr_token) {
-            abort(403, 'QR inválido');
-        }
-
-
-
-       $mesaOcupada = false;
-$puedePedir = false;
-
-
-if($mesa->estado === 'libre'){
-
-    $mesa->estado = 'ocupada';
-    $mesa->save();
-
-    session([
-        'mesa_activa' => $mesa->id
-    ]);
-
-    $puedePedir = true;
-
-
-}else{
-
-    $mesaOcupada = true;
-
-    if(session('mesa_activa') == $mesa->id){
-
-        $puedePedir = true;
-        $mesaOcupada = false;
-
+    if(!$request->token || $request->token !== $mesa->qr_token){
+        abort(403,'QR inválido');
     }
 
+
+    $pedidoActual = Pedido::where('mesa_id',$mesa->id)
+        ->whereIn('estado',[
+            'pendiente',
+            'en_preparacion',
+            'listo'
+        ])
+        ->first();
+
+
+
+    return Inertia::render('Client/Index',[
+
+        'mesaActual'=>$mesa,
+
+        'productos'=>Producto::all(),
+
+        'pedidoActual'=>$pedidoActual,
+
+        // puede pedir solo si no hay pedido
+        'puedePedir'=>$pedidoActual === null,
+
+        'mesaOcupada'=>$pedidoActual !== null
+
+    ]);
 }
-
-
-        $productos = Producto::select(
-            'id',
-            'nombre',
-            'precio_nano',
-            'precio_mini',
-            'precio_normal',
-            'precio_max',
-            'stock'
-        )
-        ->orderBy('nombre')
-        ->get();
-
-
-
-        $pedidoActual = Pedido::with('detalles.producto')
-            ->where('mesa_id', $mesa->id)
-            ->whereIn('estado', [
-                'pendiente',
-                'en_preparacion',
-                'listo'
-            ])
-            ->latest()
-            ->first();
-
-
-
-       return Inertia::render('Client/Index', [
-
-    'mesaActual' => $mesa,
-    'productos' => $productos,
-    'pedidoActual' => $pedidoActual,
-
-    'puedePedir' => $puedePedir,
-    'mesaOcupada' => $mesaOcupada
-
-]);
     }
 
     public function store(Request $request)

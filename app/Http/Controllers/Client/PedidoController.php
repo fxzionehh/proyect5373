@@ -43,10 +43,18 @@ class PedidoController extends Controller
     ->firstOrFail();
 
 
-if (session('mesa_activa') != $mesa->id) {
+if(
+    Pedido::where('mesa_id',$mesa->id)
+    ->whereIn('estado',[
+        'pendiente',
+        'en_preparacion',
+        'listo'
+    ])
+    ->exists()
+){
 
     throw new \Exception(
-        'Esta mesa está siendo utilizada por otro cliente.'
+        'Esta mesa ya tiene un pedido activo.'
     );
 
 }
