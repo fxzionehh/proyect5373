@@ -189,7 +189,7 @@ const confirmar = () => {
 </div>
 
             <div
-    v-if="paso === 1 && puedePedir"
+    v-if="paso === 1"
     class="p-6 animate-in slide-in-from-bottom-10"
 >
                 <h2 class="text-2xl font-black uppercase italic text-zinc-500 mb-6">
@@ -198,24 +198,16 @@ const confirmar = () => {
                 
                 <div class="grid grid-cols-2 gap-4">
                     <button 
-                        v-for="p in productos" 
-                        :key="p.id" 
-                        @click="seleccionarProducto(p)"
-                        :disabled="pedidoActualLocal !== null"
-                        :class="[
-                            pedidoActualLocal ? 'opacity-30 cursor-not-allowed' : '',
-                            p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50 cursor-not-allowed'
-                        ]"
-                        class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
-                    >
-                        <div class="w-12 h-12 bg-black rounded-full flex items-center justify-center mb-4">
-                            <i class="fa-solid fa-mug-hot text-amber-500"></i>
-                        </div>
-                        <h3 class="font-black text-sm uppercase leading-tight">{{ p.nombre }}</h3>
-                        <p class="text-[10px] text-zinc-500 mt-1 uppercase">
-                            {{ p.stock > 0 ? `Desde $${Number(p.precio_nano).toLocaleString('es-CL')}` : 'Agotado' }}
-                        </p>
-                    </button>
+    v-for="p in productos"
+    :key="p.id"
+    @click="seleccionarProducto(p)"
+    :disabled="!puedePedir || pedidoActualLocal !== null"
+    :class="[
+        !puedePedir ? 'opacity-40 cursor-not-allowed' : '',
+        p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50'
+    ]"
+    class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
+>
                 </div>
             </div>
 
