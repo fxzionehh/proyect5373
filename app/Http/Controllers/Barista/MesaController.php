@@ -20,41 +20,98 @@ class MesaController extends Controller
         ]);
     }
 
-  
- public function show($id, Request $request)
-{
-    $mesa = Mesa::findOrFail($id);
+    
+    public function show($id, Request $request)
+    {
+        $mesa = Mesa::findOrFail($id);
 
-    if (!$request->token || $request->token !== $mesa->qr_token) {
 
-        abort(403, 'Error');
+        // Validar QR
+        if (!$request->token || $request->token !== $mesa->qr_token) {
+            abort(403, 'QR inválido');
+        }
 
+
+
+        $puedePedir = false;
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONTROL DE CLIENTE DE LA MESA
+        |--------------------------------------------------------------------------
+        */
+
+
+        // Si la mesa está libre, el primero que entra la toma
+        if($mesa->estado === 'libre'){
+
+
+            $mesa->estado = 'ocupada';
+            $mesa->save();
+
+
+            session([
+                'mesa_activa' => $mesa->id
+            ]);
+
+
+            $puedePedir = true;
+
+
+
+        }else{
+
+
+            // Si ya está ocupada, solo puede pedir
+            // quien tiene la sesión de esa mesa
+
+            if(session('mesa_activa') == $mesa->id){
+
+                $puedePedir = true;
+
+            }
+
+        }
+
+
+
+        $productos = Producto::select(
+            'id',
+            'nombre',
+            'precio_nano',
+            'precio_mini',
+            'precio_normal',
+            'precio_max',
+            'stock'
+        )
+        ->orderBy('nombre')
+        ->get();
+
+
+
+        $pedidoActual = Pedido::with('detalles.producto')
+            ->where('mesa_id', $mesa->id)
+            ->whereIn('estado', [
+                'pendiente',
+                'en_preparacion',
+                'listo'
+            ])
+            ->latest()
+            ->first();
+
+
+
+        return Inertia::render('Client/Index', [
+
+            'mesaActual' => $mesa,
+            'productos' => $productos,
+            'pedidoActual' => $pedidoActual,
+            'puedePedir' => $puedePedir
+
+        ]);
     }
-
-    $productos = Producto::select(
-        'id',
-        'nombre',
-        'precio_nano',
-        'precio_mini',
-        'precio_normal',
-        'precio_max',
-        'stock'
-    )->orderBy('nombre')->get();
-
-    $pedidoActual = Pedido::with('detalles.producto')
-        ->where('mesa_id', $mesa->id)
-        ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
-        ->latest()
-        ->first();
-
-    return Inertia::render('Client/Index', [
-        'mesaActual'   => $mesa,
-        'productos'    => $productos,
-        'pedidoActual' => $pedidoActual,
-        'puedePedir'   => $pedidoActual === null,
-    ]);
-}
-
 
     public function store(Request $request)
     {
