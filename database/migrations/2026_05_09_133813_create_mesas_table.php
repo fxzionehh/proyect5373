@@ -6,20 +6,34 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-   public function up(): void
-{
-   Schema::create('mesas', function (Blueprint $table) {
-    $table->id();
-    $table->integer('numero')->unique();
-    $table->enum('estado', ['libre', 'ocupada', 'atendiendo'])->default('libre');
-    $table->string('qr_token')->unique()->nullable();
-    $table->timestamps();
-});
-}
+    public function up(): void
+    {
+        Schema::create('mesas', function (Blueprint $table) {
 
-    /**
-     * Reverse the migrations.
-     */
+            $table->id();
+
+            $table->integer('numero')->unique();
+
+            $table->enum('estado', [
+                'libre',
+                'ocupada',
+                'atendiendo'
+            ])->default('libre');
+
+        
+            $table->string('qr_token')
+                ->unique()
+                ->nullable();
+
+         
+            $table->string('cliente_token')
+                ->nullable();
+
+            $table->timestamps();
+        });
+    }
+
+
     public function down(): void
     {
         Schema::dropIfExists('mesas');
