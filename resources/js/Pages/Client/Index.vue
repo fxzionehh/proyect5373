@@ -11,6 +11,7 @@ const props = defineProps({
     mesaActual: Object,
     pedidoActual: Object,
     puedePedir: Boolean,
+    mesaOcupada: Boolean,
 })
 
 const paso = ref(1)
@@ -162,9 +163,28 @@ const confirmar = () => {
                 </div>
             </header>
 
-        
+            <div
+                    v-if="MesaOcupada"
+                    class="mx-6 mt-6 bg-red-600 rounded-3xl p-6 text-center"
+                >
+                    <div class="text-5xl mb-4">🚫</div>
 
-            
+                    <h2 class="text-3xl font-black uppercase">
+    Mesa en uso
+</h2>
+
+<p>
+    Puedes revisar el catálogo,
+    pero otro cliente ya está realizando el pedido.
+</p>
+                </div>
+
+            <div
+    v-if="mensajeError"
+    class="mx-6 mt-4 bg-red-600 text-white rounded-xl p-4 font-bold"
+>
+    {{ mensajeError }}
+</div>
 
             <div
     v-if="paso === 1"

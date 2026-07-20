@@ -26,56 +26,41 @@ class MesaController extends Controller
         $mesa = Mesa::findOrFail($id);
 
 
-        // Validar QR
+       
         if (!$request->token || $request->token !== $mesa->qr_token) {
             abort(403, 'QR inválido');
         }
 
 
 
-        $puedePedir = false;
+       $mesaOcupada = false;
+$puedePedir = false;
 
 
+if($mesa->estado === 'libre'){
 
-        /*
-        |--------------------------------------------------------------------------
-        | CONTROL DE CLIENTE DE LA MESA
-        |--------------------------------------------------------------------------
-        */
+    $mesa->estado = 'ocupada';
+    $mesa->save();
 
+    session([
+        'mesa_activa' => $mesa->id
+    ]);
 
-        // Si la mesa está libre, el primero que entra la toma
-        if($mesa->estado === 'libre'){
-
-
-            $mesa->estado = 'ocupada';
-            $mesa->save();
+    $puedePedir = true;
 
 
-            session([
-                'mesa_activa' => $mesa->id
-            ]);
+}else{
 
+    $mesaOcupada = true;
 
-            $puedePedir = true;
+    if(session('mesa_activa') == $mesa->id){
 
+        $puedePedir = true;
+        $mesaOcupada = false;
 
-
-        }else{
-
-
-        
-
-           if(session('mesa_activa') != $mesa->id){
-
-    throw new \Exception(
-        'No tienes permiso para realizar un pedido en esta mesa.'
-    );
+    }
 
 }
-
-        }
-
 
 
         $productos = Producto::select(
@@ -104,14 +89,16 @@ class MesaController extends Controller
 
 
 
-        return Inertia::render('Client/Index', [
+       return Inertia::render('Client/Index', [
 
-            'mesaActual' => $mesa,
-            'productos' => $productos,
-            'pedidoActual' => $pedidoActual,
-            'puedePedir' => $puedePedir
+    'mesaActual' => $mesa,
+    'productos' => $productos,
+    'pedidoActual' => $pedidoActual,
 
-        ]);
+    'puedePedir' => $puedePedir,
+    'mesaOcupada' => $mesaOcupada
+
+]);
     }
 
     public function store(Request $request)
