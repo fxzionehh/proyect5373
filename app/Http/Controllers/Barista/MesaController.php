@@ -40,7 +40,7 @@ class MesaController extends Controller
         ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
         ->latest()
         ->first();
-dd($pedidoActual);
+
     return Inertia::render('Client/Index', [
         'mesaActual'   => $mesa,
         'productos'    => $productos,
