@@ -38,13 +38,18 @@ class PedidoController extends Controller
             DB::transaction(function () use ($data) {
 
                
-                $mesa = Mesa::where('id', $data['mesa_id'])
-                    ->lockForUpdate()
-                    ->firstOrFail();
+               $mesa = Mesa::where('id', $data['mesa_id'])
+    ->lockForUpdate()
+    ->firstOrFail();
 
-                if ($mesa->estado === 'ocupada') {
-                    throw new \Exception('Esta mesa ya tiene un pedido activo.');
-                }
+
+if (session('mesa_activa') != $mesa->id) {
+
+    throw new \Exception(
+        'Esta mesa está siendo utilizada por otro cliente.'
+    );
+
+}
                
                 $nombreVaso = match ($data['tamano']) {
                     'nano'   => 'Vaso Nano 120ml',
