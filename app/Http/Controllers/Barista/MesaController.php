@@ -40,7 +40,7 @@ class MesaController extends Controller
         'mesaActual' => $mesa,
         'productos' => $productos,
         'pedidoActual' => $pedidoActual,
-        'puedePedir' => $mesa->estado !== 'ocupada',
+        'puedePedir' => $mesa->estado !== 'libre',
         
     ]);
 }
