@@ -162,31 +162,9 @@ const confirmar = () => {
                 </div>
             </header>
 
-            <div
-                    v-if="!puedePedir"
-                    class="mx-6 mt-6 bg-red-600 rounded-3xl p-6 text-center"
-                >
-                    <div class="text-5xl mb-4">🚫</div>
+        
 
-                    <h2 class="text-3xl font-black uppercase">
-                        Mesa ocupada
-                    </h2>
-
-                    <p class="mt-3 text-red-100">
-                        Esta mesa ya tiene un pedido en proceso.
-                    </p>
-
-                    <p class="text-red-100">
-                        Espera a que el pedido sea entregado para poder realizar uno nuevo.
-                    </p>
-                </div>
-
-            <div
-    v-if="mensajeError"
-    class="mx-6 mt-4 bg-red-600 text-white rounded-xl p-4 font-bold"
->
-    {{ mensajeError }}
-</div>
+            
 
             <div
     v-if="paso === 1"
