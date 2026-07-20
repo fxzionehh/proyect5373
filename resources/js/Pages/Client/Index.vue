@@ -162,31 +162,7 @@ const confirmar = () => {
                 </div>
             </header>
 
-            <div
-                    v-if="!puedePedir"
-                    class="mx-6 mt-6 bg-red-600 rounded-3xl p-6 text-center"
-                >
-                    <div class="text-5xl mb-4">🚫</div>
-
-                    <h2 class="text-3xl font-black uppercase">
-                        Mesa ocupada
-                    </h2>
-
-                    <p class="mt-3 text-red-100">
-                        Esta mesa ya tiene un pedido en proceso.
-                    </p>
-
-                    <p class="text-red-100">
-                        Espera a que el pedido sea entregado para poder realizar uno nuevo.
-                    </p>
-                </div>
-
-            <div
-    v-if="mensajeError"
-    class="mx-6 mt-4 bg-red-600 text-white rounded-xl p-4 font-bold"
->
-    {{ mensajeError }}
-</div>
+        
 
             <div
     v-if="paso === 1"
@@ -198,16 +174,26 @@ const confirmar = () => {
                 
                 <div class="grid grid-cols-2 gap-4">
                     <button 
-    v-for="p in productos"
-    :key="p.id"
-    @click="seleccionarProducto(p)"
-    :disabled="!puedePedir || pedidoActualLocal !== null"
-    :class="[
-        !puedePedir ? 'opacity-40 cursor-not-allowed' : '',
-        p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50'
-    ]"
-    class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
->
+        v-for="p in productos"
+        :key="p.id"
+        @click="seleccionarProducto(p)"
+        :disabled="!puedePedir || pedidoActualLocal !== null"
+        :class="[
+            !puedePedir ? 'opacity-40 cursor-not-allowed' : '',
+            p.stock > 0 ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-900/50 border-zinc-900 opacity-50'
+        ]"
+        class="p-4 rounded-3xl border transition-all active:scale-95 text-left"
+    >
+
+        <h3 class="font-black uppercase">
+            {{ p.nombre }}
+        </h3>
+
+        <p class="text-amber-400 font-bold mt-2">
+            ${{ Number(p.precio_normal).toLocaleString('es-CL') }}
+        </p>
+
+    </button>
                 </div>
             </div>
 
