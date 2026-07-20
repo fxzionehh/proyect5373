@@ -21,27 +21,31 @@ class MesaController extends Controller
     }
 
   
-   public function show($id, Request $request)
+ public function show($id, Request $request)
 {
     $mesa = Mesa::findOrFail($id);
 
-
     $productos = Producto::select(
-        'id','nombre','precio_nano','precio_mini','precio_normal','precio_max','stock'
+        'id',
+        'nombre',
+        'precio_nano',
+        'precio_mini',
+        'precio_normal',
+        'precio_max',
+        'stock'
     )->orderBy('nombre')->get();
 
     $pedidoActual = Pedido::with('detalles.producto')
         ->where('mesa_id', $mesa->id)
-        ->whereIn('estado', ['pendiente','en_preparacion','listo'])
+        ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
         ->latest()
         ->first();
-
+dd($pedidoActual);
     return Inertia::render('Client/Index', [
-        'mesaActual' => $mesa,
-        'productos' => $productos,
+        'mesaActual'   => $mesa,
+        'productos'    => $productos,
         'pedidoActual' => $pedidoActual,
-        'puedePedir' => $mesa->estado !== 'libre',
-        
+        'puedePedir'   => $pedidoActual === null,
     ]);
 }
 
