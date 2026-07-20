@@ -67,11 +67,13 @@ class MesaController extends Controller
             // Si ya está ocupada, solo puede pedir
             // quien tiene la sesión de esa mesa
 
-            if(session('mesa_activa') == $mesa->id){
+           if(session('mesa_activa') != $mesa->id){
 
-                $puedePedir = true;
+    throw new \Exception(
+        'No tienes permiso para realizar un pedido en esta mesa.'
+    );
 
-            }
+}
 
         }
 
