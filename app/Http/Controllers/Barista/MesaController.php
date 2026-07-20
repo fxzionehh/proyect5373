@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Mesa;
 use App\Models\Producto;
 use App\Models\Pedido;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -21,120 +20,41 @@ class MesaController extends Controller
         ]);
     }
 
-    
-  public function show($id, Request $request)
+  
+ public function show($id, Request $request)
 {
     $mesa = Mesa::findOrFail($id);
 
+    if (!$request->token || $request->token !== $mesa->qr_token) {
 
-    // validar QR de la mesa
-    if(
-        !$request->token ||
-        $request->token !== $mesa->qr_token
-    ){
-        abort(403,'QR inválido');
-    }
-
-
-
-    $clienteToken = Cookie::get('cliente_token');
-
-
-    $puedePedir = false;
-    $mesaOcupada = false;
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | PRIMER CLIENTE QUE ENTRA
-    |--------------------------------------------------------------------------
-    */
-
-    if(!$mesa->cliente_token){
-
-        $nuevoToken = Str::random(40);
-
-
-        $mesa->cliente_token = $nuevoToken;
-        $mesa->estado = 'ocupada';
-        $mesa->save();
-
-
-        $clienteToken = $nuevoToken;
-
-
-        $puedePedir = true;
-
+        abort(403, 'Error');
 
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | CLIENTE DUEÑO DE LA MESA
-    |--------------------------------------------------------------------------
-    */
-
-    elseif($mesa->cliente_token === $clienteToken){
-
-
-        $puedePedir = true;
-
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | OTRO CLIENTE
-    |--------------------------------------------------------------------------
-    */
-
-    else{
-
-        $mesaOcupada = true;
-
-    }
-
-
-
+    $productos = Producto::select(
+        'id',
+        'nombre',
+        'precio_nano',
+        'precio_mini',
+        'precio_normal',
+        'precio_max',
+        'stock'
+    )->orderBy('nombre')->get();
 
     $pedidoActual = Pedido::with('detalles.producto')
-        ->where('mesa_id',$mesa->id)
-        ->whereIn('estado',[
-            'pendiente',
-            'en_preparacion',
-            'listo'
-        ])
+        ->where('mesa_id', $mesa->id)
+        ->whereIn('estado', ['pendiente', 'en_preparacion', 'listo'])
         ->latest()
         ->first();
 
-
-
-    return Inertia::render('Client/Index',[
-
-        'mesaActual'=>$mesa,
-
-        'productos'=>Producto::all(),
-
-        'pedidoActual'=>$pedidoActual,
-
-
-        'puedePedir'=>$puedePedir,
-
-        'mesaOcupada'=>$mesaOcupada
-
-    ])
-    ->withCookie(
-        cookie(
-            'cliente_token',
-            $clienteToken,
-            60*24
-        )
-    );
-
+    return Inertia::render('Client/Index', [
+        'mesaActual'   => $mesa,
+        'productos'    => $productos,
+        'pedidoActual' => $pedidoActual,
+        'puedePedir'   => $pedidoActual === null,
+    ]);
 }
+
 
     public function store(Request $request)
     {
