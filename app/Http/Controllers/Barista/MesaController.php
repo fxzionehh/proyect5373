@@ -64,8 +64,7 @@ class MesaController extends Controller
         }else{
 
 
-            // Si ya está ocupada, solo puede pedir
-            // quien tiene la sesión de esa mesa
+        
 
            if(session('mesa_activa') != $mesa->id){
 
