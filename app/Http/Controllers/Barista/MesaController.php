@@ -25,6 +25,12 @@ class MesaController extends Controller
 {
     $mesa = Mesa::findOrFail($id);
 
+    if (!$request->token || $request->token !== $mesa->qr_token) {
+
+        abort(403, 'Error');
+
+    }
+
     $productos = Producto::select(
         'id',
         'nombre',
