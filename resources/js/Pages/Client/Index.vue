@@ -164,7 +164,7 @@ const confirmar = () => {
             </header>
 
             <div
-                    v-if="MesaOcupada"
+                    v-if="mesaOcupada"
                     class="mx-6 mt-6 bg-red-600 rounded-3xl p-6 text-center"
                 >
                     <div class="text-5xl mb-4">🚫</div>
